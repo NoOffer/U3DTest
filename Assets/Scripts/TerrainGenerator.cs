@@ -223,15 +223,14 @@ public class TerrainGenerator : MonoBehaviour
             if (!meshMasters.ContainsKey(chunkOffset))
             {
                 meshMasters[chunkOffset] = new GameObject();
+                meshMasters[chunkOffset].transform.position = transform.position + new Vector3(
+                    chunkOffset.x,
+                    0f,
+                    chunkOffset.y) * chunkSideLen;
+                meshMasters[chunkOffset].transform.parent = transform;
+                meshMasters[chunkOffset].AddComponent<MeshFilter>();
+                meshMasters[chunkOffset].AddComponent<MeshRenderer>();
             }
-
-            meshMasters[chunkOffset].transform.position = transform.position + new Vector3(
-                chunkOffset.x,
-                0f,
-                chunkOffset.y) * chunkSideLen;
-            meshMasters[chunkOffset].transform.parent = transform;
-            meshMasters[chunkOffset].AddComponent<MeshFilter>();
-            meshMasters[chunkOffset].AddComponent<MeshRenderer>();
 
             meshFilter = meshMasters[chunkOffset].GetComponent<MeshFilter>();
             meshRenderer = meshMasters[chunkOffset].GetComponent<MeshRenderer>();
