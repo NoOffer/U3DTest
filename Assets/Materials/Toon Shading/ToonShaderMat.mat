@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ToonShaderMat
-  m_Shader: {fileID: 4800000, guid: 34bf2df877fbc794b899450990d4b063, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1acec0cd7f0176847a1c614a112d143a, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -38,9 +38,17 @@ Material:
     m_Floats:
     - Vector1_f75e5b09050145f08c66e48fd1629a44: 200
     - _BrightnessScaler: 0.05
+    - _DiffuseThreshold: 0.05
     - _MaxSaturation: 1
     - _MinSaturation: 0
+    - _RimCoe: 1
+    - _RimThreshold: 0.75
     - _SaturationScaler: 0.447
+    - _Smoothness: 0.3
+    - _SmoothnessCoe: 1
+    - _Specular: 15
+    - _SpecularThreshold: 0.1
     - _ToonIntensity: 1
-    m_Colors: []
+    m_Colors:
+    - _SurfaceColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
