@@ -31,7 +31,7 @@ Shader "Unlit/GeomGrassShader"
         {
             Cull off
 
-            CGINCLUDE
+            CGPROGRAM
             // ----------------------------------------------------------------------------------------------------------------------------------- Pragma
             #pragma vertex beforeTessVert
 
@@ -45,9 +45,13 @@ Shader "Unlit/GeomGrassShader"
             #pragma fragment frag
 
             #pragma target 5.0
+            #pragma multi_compile_fwdbase
+            ENDCG
 
+            CGINCLUDE
             // ---------------------------------------------------------------------------------------------------------------------------------- Include
             #include "UnityCG.cginc"
+            #include "Lighting.cginc"
 
             // ----------------------------------------------------------------------------------------------------------------------------------- Struct
             // ------------------------------------------------------------------------------------------------------------------------ vertex Phase ----
@@ -280,12 +284,12 @@ Shader "Unlit/GeomGrassShader"
 
             #pragma geometry geo
 
-            #pragma fragment frag
+            #pragma fragment shadowFrag
 
             #pragma target 5.0
-            #pragma multi_complie_shadowcaster
+            #pragma multi_compile_shadowcaster
 
-            float4 frag (geomData i) : SV_Target
+            float4 shadowFrag (geomData i) : SV_Target
             {
                 SHADOW_CASTER_FRAGMENT(i);
             }
