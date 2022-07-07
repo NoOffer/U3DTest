@@ -27,8 +27,49 @@ Shader "Unlit/GeomGrassShader"
     {
         Tags { "RenderType"="Opaque" }
 
+        // Base plane
         Pass
         {
+            Tags
+            {
+                "LightMode" = "SRPDefaultUnlit"
+            }
+
+            Cull back
+
+            CGPROGRAM
+            // ----------------------------------------------------------------------------------------------------------------------------------- Pragma
+            #pragma vertex vert
+            #pragma fragment baseFrag
+
+            // ---------------------------------------------------------------------------------------------------------------------------------- Include
+            #include "UnityCG.cginc"
+
+            // ---------------------------------------------------------------------------------------------------------------------------------- Kernels
+            v2f vert (a2v i)
+            {
+                v2f o;
+                o.vertex = UnityObjectToClipPos(i.vertex);
+                o.normal = i.normal;
+                o.tangent = i.tangent;
+                return o;
+            }
+
+            float4 baseFrag (v2f v) : SV_Target
+            {
+                return _BottomColor;
+            }
+            ENDCG
+        }
+
+        // Grass
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "UniversalForward"
+            }
+
             Cull off
 
             CGPROGRAM
@@ -42,7 +83,7 @@ Shader "Unlit/GeomGrassShader"
             #pragma require geometry
             #pragma geometry geo
 
-            #pragma fragment frag
+            #pragma fragment grassFrag
 
             #pragma target 5.0
             #pragma multi_compile_fwdbase
@@ -261,7 +302,7 @@ Shader "Unlit/GeomGrassShader"
             }
 
             // ---------------------------------------------------------------------------------------------------------------------- Fragment Phase ----
-            fixed4 frag (geomData i) : SV_Target
+            fixed4 grassFrag (geomData i) : SV_Target
             {
                 return lerp(_BottomColor, _TopColor, i.uv.y);
                 //return float4(1, 1, 1, 1);
@@ -275,6 +316,8 @@ Shader "Unlit/GeomGrassShader"
             {
                 "LightMode" = "ShadowCaster"
             }
+
+            Cull back
 
             CGPROGRAM
             #pragma vertex beforeTessVert
