@@ -11,7 +11,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 1acec0cd7f0176847a1c614a112d143a, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -45,7 +45,7 @@ Material:
     - _OutlineScaler: 0.03
     - _OutlineThreshold: 0.15
     - _RimCoe: 1
-    - _RimThreshold: 0.4
+    - _RimThreshold: 0.7
     - _SaturationScaler: 0.447
     - _Smoothness: 0.7
     - _SmoothnessCoe: 1
