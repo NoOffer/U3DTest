@@ -1,4 +1,4 @@
-Shader "Unlit/GeomGrassShader"
+Shader "Nofer/GeomGrassShader"
 {
     Properties
     {
