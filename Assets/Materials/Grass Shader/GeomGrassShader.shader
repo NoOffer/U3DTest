@@ -22,6 +22,8 @@ Shader "Nofer/GeomGrassShader"
         
         // Tessellation
         _TessellationLevel("Level of Tessellation", Range(1, 16)) = 1
+        _MaxFullTessDist("Max Distance of Full Tessellation", float) = 10
+        _TessAttenDist("Attenuation Distance of Tessellation", float) = 3
     }
     SubShader
     {
@@ -155,6 +157,8 @@ Shader "Nofer/GeomGrassShader"
 
             // Tessellation
             float _TessellationLevel;
+            float _MaxFullTessDist;
+            float _TessAttenDist;
 
             // ---------------------------------------------------------------------------------------------------------------------------------- Kernels
             // ------------------------------------------------------------------------------------------------------------------------ Vertex Phase ----
@@ -182,13 +186,30 @@ Shader "Nofer/GeomGrassShader"
                 return o;
             }
 
+            float DistFade(float4 vertexPosOS)
+            {
+                float dist = distance(mul(unity_ObjectToWorld, vertexPosOS).xyz, _WorldSpaceCameraPos.xyz);
+                return 1 - saturate((dist - _MaxFullTessDist) / _TessAttenDist);
+            }
+
             TessFactors hsconst (InputPatch<ControlPoint,3> patch)
             {
                 TessFactors o;
-                o.edge[0] = _TessellationLevel;
-                o.edge[1] = _TessellationLevel;
-                o.edge[2] = _TessellationLevel;
-                o.inside  = _TessellationLevel;
+
+                float tessLv0 = max(DistFade(patch[0].vertex) * _TessellationLevel, 1);
+                float tessLv1 = max(DistFade(patch[1].vertex) * _TessellationLevel, 1);
+                float tessLv2 = max(DistFade(patch[2].vertex) * _TessellationLevel, 1);
+                
+                o.edge[0] = tessLv0;
+                o.edge[1] = tessLv1;
+                o.edge[2] = tessLv2;
+                o.inside  = (tessLv0 + tessLv1 + tessLv2) / 3;
+
+                //o.edge[0] = _TessellationLevel;
+                //o.edge[1] = _TessellationLevel;
+                //o.edge[2] = _TessellationLevel;
+                //o.inside  = _TessellationLevel;
+
                 return o;
             }
                 
@@ -249,8 +270,9 @@ Shader "Nofer/GeomGrassShader"
                 float4 pos = IN[0].vertex;
                 
                 // Randomize shape
-                float height = (rand(pos.zyx) * 2 - 1) * _BladeHeightVary + _BladeHeight;
-                float width = (rand(pos.xzy) * 2 - 1) * _BladeWidthVary + _BladeWidth;
+                float distFactor = 1;
+                float height = ((rand(pos.zyx) * 2 - 1) * _BladeHeightVary + _BladeHeight) * distFactor;
+                float width = ((rand(pos.xzy) * 2 - 1) * _BladeWidthVary + _BladeWidth) * distFactor;
 
                 // Calculate TBN
                 float3 normal = IN[0].normal;

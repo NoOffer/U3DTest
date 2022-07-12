@@ -3,6 +3,8 @@ Shader "Unlit/TessellationShader"
     Properties
     {
         _TessellationLevel("Level of Tessellation", Range(1, 32)) = 1
+        _MaxFullTessDist("Max Distance of Full Tessellation", float) = 10
+        _TessAttenDist("Max Distance of Tessellation", float) = 3
     }
     SubShader
     {
@@ -55,6 +57,8 @@ Shader "Unlit/TessellationShader"
 
                 // ------------------------------------------------------------------------------------------------------------------ Redifine Properties
                 float _TessellationLevel;
+                float _MaxFullTessDist;
+                float _TessAttenDist;
 
                 // ------------------------------------------------------------------------------------------------------------------------------ Kernels
                 ControlPoint beforeTessVert (a2v v)
@@ -77,14 +81,24 @@ Shader "Unlit/TessellationShader"
                     return o;
                 }
 
+                float DistBasedTessLevel(float4 vertexPosOS)
+                {
+                    float dist = distance(mul(unity_ObjectToWorld, vertexPosOS).xyz, _WorldSpaceCameraPos.xyz);
+                    return max((1 - saturate((dist - _MaxFullTessDist) / _TessAttenDist)) * _TessellationLevel, 1);
+                }
+
                 TessFactors hsconst (InputPatch<ControlPoint, 3> patch)  // Helper method
                 {
                     TessFactors o;
 
-                    o.edge[0] = _TessellationLevel;
-                    o.edge[1] = _TessellationLevel;
-                    o.edge[2] = _TessellationLevel;
-                    o.inside  = _TessellationLevel;
+                    float tessLv0 = DistBasedTessLevel(patch[0].vertexTess);
+                    float tessLv1 = DistBasedTessLevel(patch[1].vertexTess);
+                    float tessLv2 = DistBasedTessLevel(patch[2].vertexTess);
+
+                    o.edge[0] = tessLv0;
+                    o.edge[1] = tessLv1;
+                    o.edge[2] = tessLv2;
+                    o.inside  = (tessLv0 + tessLv1 + tessLv2) / 3;
 
                     return o;
                 }

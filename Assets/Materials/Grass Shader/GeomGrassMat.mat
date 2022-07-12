@@ -35,6 +35,8 @@ Material:
     - _BladeWidth: 0.1
     - _BladeWidthVary: 0.05
     - _GrassSegment: 1
+    - _MaxFullTessDist: 50
+    - _TessAttenDist: 30
     - _TessellationLevel: 5
     - _WindStrength: 0.1
     m_Colors:
