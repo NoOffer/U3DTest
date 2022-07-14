@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 Shader "Nofer/GeomGrassShader"
 {
     Properties
@@ -196,19 +198,19 @@ Shader "Nofer/GeomGrassShader"
             {
                 TessFactors o;
 
-                float tessLv0 = max(DistFade(patch[0].vertex) * _TessellationLevel, 1);
-                float tessLv1 = max(DistFade(patch[1].vertex) * _TessellationLevel, 1);
-                float tessLv2 = max(DistFade(patch[2].vertex) * _TessellationLevel, 1);
+                //float tessLv0 = max(DistFade(patch[0].vertex) * _TessellationLevel, 1);
+                //float tessLv1 = max(DistFade(patch[1].vertex) * _TessellationLevel, 1);
+                //float tessLv2 = max(DistFade(patch[2].vertex) * _TessellationLevel, 1);
                 
-                o.edge[0] = tessLv0;
-                o.edge[1] = tessLv1;
-                o.edge[2] = tessLv2;
-                o.inside  = (tessLv0 + tessLv1 + tessLv2) / 3;
+                //o.edge[0] = tessLv0;
+                //o.edge[1] = tessLv1;
+                //o.edge[2] = tessLv2;
+                //o.inside  = (tessLv0 + tessLv1 + tessLv2) / 3;
 
-                //o.edge[0] = _TessellationLevel;
-                //o.edge[1] = _TessellationLevel;
-                //o.edge[2] = _TessellationLevel;
-                //o.inside  = _TessellationLevel;
+                o.edge[0] = _TessellationLevel;
+                o.edge[1] = _TessellationLevel;
+                o.edge[2] = _TessellationLevel;
+                o.inside  = _TessellationLevel;
 
                 return o;
             }
@@ -270,57 +272,63 @@ Shader "Nofer/GeomGrassShader"
                 float4 pos = IN[0].vertex;
                 
                 // Randomize shape
-                float distFactor = 1;
-                float height = ((rand(pos.zyx) * 2 - 1) * _BladeHeightVary + _BladeHeight) * distFactor;
-                float width = ((rand(pos.xzy) * 2 - 1) * _BladeWidthVary + _BladeWidth) * distFactor;
-
-                // Calculate TBN
-                float3 normal = IN[0].normal;
-                float4 tangent = IN[0].tangent;
-                float3 binormal = cross(normal, tangent) * tangent.w;
-
-                // Construct TBN matrix
-                float3x3 tangentToObject = float3x3(
-                    tangent.x, binormal.x, normal.x,
-                    tangent.y, binormal.y, normal.y,
-                    tangent.z, binormal.z, normal.z
-                );
-
-                // Calculate wind effects
-                float2 windUV = pos.xz * _WindMap_ST.xy + _WindMap_ST.zw + _WindFrequency * _Time.y;
-                float2 windEffect = (tex2Dlod(_WindMap, float4(windUV, 0, 0)).xy * 2 - 1) * _WindStrength;
-                float3x3 windRotation = AngleAxis3x3(UNITY_PI * windEffect, normalize(float3(windEffect, 0)));
-
-                // Calculate transformation matrix
-                float3x3 transformationMatrix = mul(mul(tangentToObject, AngleAxis3x3(rand(pos.xyz) * UNITY_TWO_PI, float3(0, 0, 1))), windRotation);
-
-                // Calculate grass blade forward offset
-                float forward = rand(pos.xyz) * _BladeForward;
-                
-                // Arrange grass mesh points
-                geomData o;
-                for (int i = 0; i < BLADE_SEGMENTS; i++)
+                float distFactor = DistFade(pos);
+                if (distFactor > 0)
                 {
-                    float t = i / (float)BLADE_SEGMENTS;
-                    float segmentHeight = height * t;
-                    float segmentForward = pow(t, _BladeCurvature) * forward;
-	                float segmentWidth = width * (1 - t);
-                    
-                    o.pos = UnityObjectToClipPos(pos + mul(transformationMatrix, float3(-segmentWidth, segmentForward, segmentHeight)));
-                    o.uv = float2(0, t);
-                    triStream.Append(o);
+                    float height = ((rand(pos.zyx) * 2 - 1) * _BladeHeightVary + _BladeHeight) * distFactor;
+                    float width = ((rand(pos.xzy) * 2 - 1) * _BladeWidthVary + _BladeWidth) * distFactor;
+
+                    // Calculate TBN
+                    float3 normal = UnityObjectToWorldNormal(IN[0].normal);
+                    float3 tangent = UnityObjectToWorldDir(IN[0].tangent);
+                    float3 binormal = UnityObjectToWorldDir(cross(normal, tangent) * IN[0].tangent.w);
+
+                    // Construct TBN matrix
+                    float3x3 tangentToWorld = float3x3(
+                        tangent.x, binormal.x, normal.x,
+                        tangent.y, binormal.y, normal.y,
+                        tangent.z, binormal.z, normal.z
+                    );
+
+                    // Calculate wind effects
+                    float2 windUV = pos.xz * _WindMap_ST.xy + _WindMap_ST.zw + _WindFrequency * _Time.y;
+                    float2 windEffect = (tex2Dlod(_WindMap, float4(windUV, 0, 0)).xy * 2 - 1) * _WindStrength;
+                    float3x3 windRotation = AngleAxis3x3(UNITY_PI * windEffect, normalize(float3(windEffect, 0)));
+
+                    // Calculate transformation matrix
+                    float3x3 transformationMatrix = mul(mul(tangentToWorld, AngleAxis3x3(rand(pos.xyz) * UNITY_TWO_PI, float3(0, 0, 1))), windRotation);
+
+                    // Calculate grass blade forward offset
+                    float forward = rand(pos.xyz) * _BladeForward;
                 
-                    o.pos = UnityObjectToClipPos(pos + mul(transformationMatrix, float3(segmentWidth, segmentForward, segmentHeight)));
-                    o.uv = float2(1, t);
+                    // Arrange grass mesh points
+                    geomData o;
+                    for (int i = 0; i < BLADE_SEGMENTS; i++)
+                    {
+                        float t = i / (float)BLADE_SEGMENTS;
+                        float segmentHeight = height * t;
+                        float segmentForward = pow(t, _BladeCurvature) * forward;
+	                    float segmentWidth = width * (1 - t);
+                    
+                        o.pos = mul(unity_ObjectToWorld, pos) + float4(mul(transformationMatrix, float3(-segmentWidth, segmentForward, segmentHeight)), 0);
+                        o.pos = mul(UNITY_MATRIX_VP, o.pos);
+                        o.uv = float2(0, t);
+                        triStream.Append(o);
+                
+                        o.pos = mul(unity_ObjectToWorld, pos) + float4(mul(transformationMatrix, float3(segmentWidth, segmentForward, segmentHeight)), 0);
+                        o.pos = mul(UNITY_MATRIX_VP, o.pos);
+                        o.uv = float2(1, t);
+                        triStream.Append(o);
+                    }
+
+                    o.pos = mul(unity_ObjectToWorld, pos) + float4(mul(transformationMatrix, float3(0, forward, height)), 0);
+                    o.pos = mul(UNITY_MATRIX_VP, o.pos);
+                    o.uv = float2(0.5, 1);
                     triStream.Append(o);
+
+                    // Restart strip
+                    triStream.RestartStrip();
                 }
-
-                o.pos = UnityObjectToClipPos(pos + mul(transformationMatrix, float3(0, forward, height)));
-                o.uv = float2(0.5, 1);
-                triStream.Append(o);
-
-                // Restart strip
-                triStream.RestartStrip();
             }
 
             // ---------------------------------------------------------------------------------------------------------------------- Fragment Phase ----
