@@ -3,9 +3,10 @@ Shader "Nofer/DepthFogShader"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _FogColor ("Fog Color", Color) = (1, 1, 1, 1)
-        _FogDensity ("Fog Density", Range(1, 100)) = 1
-        _MaxFog ("Max Fog Transparency", Range(0.1, 1)) = 1
+        _FarColor ("Far Color", Color) = (1, 1, 1, 1)
+        _NearColor ("Near Color", Color) = (1, 1, 1, 1)
+        _DepthCoefficient ("Depth Coefficient", Range(1, 100)) = 1
+        _GradientIntensity ("Gradient Intensity", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -45,9 +46,10 @@ Shader "Nofer/DepthFogShader"
             }
 
             sampler2D _MainTex;
-            float4 _FogColor;
-            float _FogDensity;
-            float _MaxFog;
+            float4 _FarColor;
+            float4 _NearColor;
+            float _DepthCoefficient;
+            float _GradientIntensity;
 
             float4 frag (v2f i) : SV_Target
             {
@@ -56,7 +58,7 @@ Shader "Nofer/DepthFogShader"
                 float depth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams) - i.screenPos.w;
                 //float depth = Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams);
                 //return clamp(1 - pow(2, -depth * _FogDensity / 1000), 0, _MaxFog);
-                return lerp(col, _FogColor, clamp(1 - pow(2, -depth * _FogDensity / 1000), 0, _MaxFog));
+                return lerp(col, lerp(_NearColor, _FarColor, saturate(1 - pow(2, -depth * _DepthCoefficient / 1000))), _GradientIntensity);
             }
             ENDHLSL
         }

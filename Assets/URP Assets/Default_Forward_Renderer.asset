@@ -75,12 +75,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f36f622bc8a329c4a9f18e9dfca563b2, type: 3}
-  m_Name: Depth Fog
+  m_Name: Depth Effects
   m_EditorClassIdentifier: 
   m_Active: 1
   settings:
     renderPassEvent: 300
-    blitMaterial: {fileID: 2100000, guid: 4ab76bb40059d2b45bc6edf0acd40453, type: 2}
+    blitMaterial: {fileID: 2100000, guid: 703f349aeea3e3c419985cf44c8b99f7, type: 2}
     blitMaterialPassIndex: -1
     sourceType: 0
     destinationType: 0
