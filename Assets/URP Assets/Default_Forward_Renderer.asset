@@ -34,8 +34,9 @@ MonoBehaviour:
   m_Name: Default_Forward_Renderer
   m_EditorClassIdentifier: 
   m_RendererFeatures:
+  - {fileID: 5839893178954870722}
   - {fileID: -1688682926901582066}
-  m_RendererFeatureMap: 0ea7c333d39790e8
+  m_RendererFeatureMap: c2efd4b9e7770b510ea7c333d39790e8
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
   shaders:
@@ -64,3 +65,24 @@ MonoBehaviour:
   m_ShadowTransparentReceive: 1
   m_RenderingMode: 0
   m_AccurateGbufferNormals: 0
+--- !u!114 &5839893178954870722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f36f622bc8a329c4a9f18e9dfca563b2, type: 3}
+  m_Name: Depth Fog
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    renderPassEvent: 300
+    blitMaterial: {fileID: 2100000, guid: 4ab76bb40059d2b45bc6edf0acd40453, type: 2}
+    blitMaterialPassIndex: -1
+    sourceType: 0
+    destinationType: 0
+    sourceTextureId: _SourceTexture
+    destinationTextureId: _DestinationTexture
