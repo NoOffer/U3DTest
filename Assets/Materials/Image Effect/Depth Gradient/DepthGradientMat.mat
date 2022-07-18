@@ -26,7 +26,7 @@ Material:
     m_Floats:
     - _DepthCoefficient: 10
     - _FogDensity: 15
-    - _GradientIntensity: 0.8
+    - _GradientIntensity: 1
     - _MaxFog: 1
     m_Colors:
     - _FarColor: {r: 1, g: 0.19496846, b: 0.2665815, a: 1}

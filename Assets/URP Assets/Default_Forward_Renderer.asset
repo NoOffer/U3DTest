@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36f622bc8a329c4a9f18e9dfca563b2, type: 3}
   m_Name: Depth Effects
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     renderPassEvent: 300
     blitMaterial: {fileID: 2100000, guid: 703f349aeea3e3c419985cf44c8b99f7, type: 2}
