@@ -840,6 +840,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1045106760}
+  - component: {fileID: 1045106761}
   m_Layer: 12
   m_Name: Test Objects
   m_TagString: Untagged
@@ -868,6 +869,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1045106761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045106759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ab1118ab2e74144f8fa2be7db9629b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worleyNoiseCompute: {fileID: 7200000, guid: 18f25ea34e96a0d4080b38de58236d81, type: 3}
+  numOfCellPerAxis: 3
+  targetRT: {fileID: 0}
+  displayMat: {fileID: 2100000, guid: 0b633c51252ee19468ef308a8ac8770c, type: 2}
 --- !u!1001 &1292098492
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1009,7 +1026,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 5561349426305759274, guid: 0b192720fb9cd324f91650fdb2786131, type: 3}
+  - {fileID: 2100000, guid: 0b633c51252ee19468ef308a8ac8770c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1050,14 +1067,13 @@ GameObject:
   - component: {fileID: 1892294427}
   - component: {fileID: 1892294430}
   - component: {fileID: 1892294429}
-  - component: {fileID: 1892294428}
   m_Layer: 12
   m_Name: Display Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1892294427
 Transform:
   m_ObjectHideFlags: 0
@@ -1072,22 +1088,6 @@ Transform:
   m_Father: {fileID: 1045106760}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 90, y: 180, z: 0}
---- !u!114 &1892294428
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1892294426}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b260dd444ab6c9d40a862ae3b1cdb752, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  computeShader: {fileID: 7200000, guid: ea5b7127241a1a34aaf1ecdcc4b1d4b3, type: 3}
-  virtualCam: {fileID: 0}
-  targetRT: {fileID: 0}
-  displayMat: {fileID: 2100000, guid: 9ee20645aa112fe40b80fe1c384ed344, type: 2}
 --- !u!23 &1892294429
 MeshRenderer:
   m_ObjectHideFlags: 0

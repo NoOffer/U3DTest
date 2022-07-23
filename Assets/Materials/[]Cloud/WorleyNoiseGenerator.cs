@@ -5,11 +5,28 @@ using UnityEngine;
 public class WorleyNoiseGenerator : MonoBehaviour
 {
     [SerializeField] private ComputeShader worleyNoiseCompute;
+    [SerializeField] private int numOfCellPerAxis;
+
+    [SerializeField] private RenderTexture targetRT;
+    [SerializeField] private Material displayMat;
 
     // -------------------------------------------------------------------------------------------------------------------------------- Initialization
     void Awake()
     {
-        
+        if (targetRT == null)
+        {
+            targetRT = new RenderTexture(100, 100, 0);
+            targetRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+            targetRT.volumeDepth = 100;
+            targetRT.enableRandomWrite = true;
+            targetRT.Create();
+        }
+        worleyNoiseCompute.SetTexture(0, "Result", targetRT);
+
+        CreatWorleyPointsData("Points");
+
+        worleyNoiseCompute.Dispatch(0, targetRT.width / 10, targetRT.height / 10, targetRT.volumeDepth / 10);
+        displayMat.SetTexture("_MainTex", targetRT);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------- Updates
@@ -19,7 +36,7 @@ public class WorleyNoiseGenerator : MonoBehaviour
     }
 
     // ---------------------------------------------------------------------------------------------------------------------------- Featured Functions
-    void CreatWorleyPointsData(int numOfCellPerAxis, string bufferName)
+    private void CreatWorleyPointsData(string bufferName)
     {
         Vector3[] points = new Vector3[numOfCellPerAxis * numOfCellPerAxis * numOfCellPerAxis];
 
@@ -29,15 +46,18 @@ public class WorleyNoiseGenerator : MonoBehaviour
             {
                 for (int k = 0; k < numOfCellPerAxis; k++)
                 {
-                    Vector3 pos = (new Vector3(i, j, k) + new Vector3(Random.value, Random.value, Random.value)) / numOfCellPerAxis;
+                    //Vector3 pos = (new Vector3(i, j, k) + new Vector3(Random.value, Random.value, Random.value)) / numOfCellPerAxis;
+                    Vector3 pos = new Vector3(Random.value, Random.value, Random.value);
                     points[k + numOfCellPerAxis * (j + numOfCellPerAxis * i)] = pos;
                 }
             }
         }
-        CreateBuffer(points, sizeof(float) * 3, bufferName);
+
+        worleyNoiseCompute.SetInt("numPerSide", numOfCellPerAxis);
+        SetUpBuffer(points, sizeof(float) * 3, bufferName);
     }
 
-    void CreateBuffer(Vector3[] data, int stride, string bufferName, int kernel = 0)
+    private void SetUpBuffer(Vector3[] data, int stride, string bufferName, int kernel = 0)
     {
         ComputeBuffer buffer = new ComputeBuffer(data.Length, stride, ComputeBufferType.Raw);
         buffer.SetData(data);
