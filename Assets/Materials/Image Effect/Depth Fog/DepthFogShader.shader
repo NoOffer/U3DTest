@@ -39,6 +39,7 @@ Shader "Nofer/DepthFogShader"
             {
                 v2f o;
                 o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+                //o.vertex = UnityObjectToClipPos(v.vertex);
                 o.screenPos = ComputeScreenPos(o.vertex);
                 o.uv = v.uv;
                 return o;
@@ -52,10 +53,8 @@ Shader "Nofer/DepthFogShader"
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_MainTex, i.uv);
-                //float depth = _CameraDepthTexture.Sample (sampler_CameraDepthTexture, i.screenPos.xy / i.screenPos.w).x;
                 float depth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams) - i.screenPos.w;
                 //float depth = Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams);
-                //return clamp(1 - pow(2, -depth * _FogDensity / 1000), 0, _MaxFog);
                 return lerp(col, _FogColor, clamp(1 - pow(2, -depth * _FogDensity / 1000), 0, _MaxFog));
             }
             ENDHLSL

@@ -18,18 +18,19 @@ public class RayMarchingMaster : MonoBehaviour
         {
             virtualCam = Camera.main;
         }
+
+        if (targetRT == null)
+        {
+            targetRT = new RenderTexture(Screen.width, Screen.height, 24);
+            targetRT.enableRandomWrite = true;
+            targetRT.wrapMode = TextureWrapMode.Repeat;
+            targetRT.Create();
+        }
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------- Updates
     void Update()
     {
-        if (targetRT == null)
-        {
-            targetRT = new RenderTexture(Screen.width, Screen.height, 24);
-            targetRT.enableRandomWrite = true;
-            targetRT.Create();
-        }
-
         computeShader.SetMatrix("_CameraToWorld", virtualCam.cameraToWorldMatrix);
         computeShader.SetMatrix("_CameraInverseProjection", virtualCam.projectionMatrix.inverse);
         computeShader.SetTexture(0, "Result", targetRT);

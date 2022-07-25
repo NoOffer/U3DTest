@@ -8,7 +8,9 @@ public class WorleyNoiseGenerator : MonoBehaviour
     [SerializeField] private int numOfCellPerAxis;
 
     [SerializeField] private RenderTexture targetRT;
-    [SerializeField] private Material displayMat;
+    [SerializeField] private Material cloudImgEffectMat;
+
+    [SerializeField] private bool manualUpdate;
 
     // -------------------------------------------------------------------------------------------------------------------------------- Initialization
     void Awake()
@@ -22,17 +24,20 @@ public class WorleyNoiseGenerator : MonoBehaviour
             targetRT.Create();
         }
         worleyNoiseCompute.SetTexture(0, "Result", targetRT);
-
-        CreatWorleyPointsData("Points");
-
-        worleyNoiseCompute.Dispatch(0, targetRT.width / 10, targetRT.height / 10, targetRT.volumeDepth / 10);
-        displayMat.SetTexture("_MainTex", targetRT);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------- Updates
-    void Update()
+    void LateUpdate()
     {
-        
+        if (manualUpdate)
+        {
+            CreatWorleyPointsData("Points");
+
+            worleyNoiseCompute.Dispatch(0, targetRT.width / 10, targetRT.height / 10, targetRT.volumeDepth / 10);
+            cloudImgEffectMat.SetTexture("_CloudNoise", targetRT);
+
+            manualUpdate = false;
+        }        
     }
 
     // ---------------------------------------------------------------------------------------------------------------------------- Featured Functions
