@@ -21,6 +21,7 @@ public class WorleyNoiseGenerator : MonoBehaviour
             targetRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             targetRT.volumeDepth = 100;
             targetRT.enableRandomWrite = true;
+            targetRT.wrapMode = TextureWrapMode.Repeat;
             targetRT.Create();
         }
         worleyNoiseCompute.SetTexture(0, "Result", targetRT);

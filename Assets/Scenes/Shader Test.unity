@@ -882,7 +882,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worleyNoiseCompute: {fileID: 7200000, guid: 18f25ea34e96a0d4080b38de58236d81, type: 3}
-  numOfCellPerAxis: 3
+  numOfCellPerAxis: 5
   targetRT: {fileID: 0}
   cloudImgEffectMat: {fileID: 2100000, guid: 0072bb2a7bf2e624688f2f0a64eeba5b, type: 2}
   manualUpdate: 1

@@ -23,7 +23,6 @@ public class RayMarchingMaster : MonoBehaviour
         {
             targetRT = new RenderTexture(Screen.width, Screen.height, 24);
             targetRT.enableRandomWrite = true;
-            targetRT.wrapMode = TextureWrapMode.Repeat;
             targetRT.Create();
         }
     }

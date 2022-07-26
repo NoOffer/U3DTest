@@ -54,7 +54,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         float surroundCellIdx = surroundCellPos.x + numPerSide * (surroundCellPos.y + numPerSide * surroundCellPos.z);
         minDist = min(minDist, length(pointPos - (surroundCellPos + Points[surroundCellIdx])));
     }
-    minDist /= sqrt(2.5);
+    minDist = 1 - minDist / sqrt(2.5);
 
     Result[id] = float4(minDist, minDist, minDist, 1);
     //Result[id] = float4(id, 1);
