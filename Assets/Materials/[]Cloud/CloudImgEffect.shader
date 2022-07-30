@@ -106,8 +106,15 @@ Shader "Nofer/CloudImgEffect"
                 return _PhaseParams.z + hgBlend * _PhaseParams.w;
             }
 
+            float BeerPowder (float d)
+            {
+                return 2 * exp(-d) * (1 - exp(-2 * d));
+            }
+
             float4 frag (v2f i) : SV_Target
             {
+                float4 bgCol = tex2D(_MainTex, i.uv);
+
                 // Calculate view direction
                 float3 viewDir = normalize(i.viewVector);
                 // Calculate the distance to, and travelled in the box
@@ -122,43 +129,40 @@ Shader "Nofer/CloudImgEffect"
                 //float phaseVal = phase(dot(viewDir, l.direction));
                 
                 // Accumulate density into cloud
-                float distLimit = max(min(sceneDepth - boxDistInfo.x, boxDistInfo.y), 0);
-                float strideIn = distLimit / 10;
-                float totalDensity = 0;
-                float transmittanceIn = 1;
-                //float lightEnergy = 0;
-                for (int stepCountIn = 0; stepCountIn < 10; stepCountIn++)
+                float distLimit = min(sceneDepth - boxDistInfo.x, boxDistInfo.y);
+                if (distLimit > 0)
                 {
-                    float3 rayPosIn = _WorldSpaceCameraPos.xyz + viewDir * (boxDistInfo.x + strideIn * stepCountIn);
-                    //float densityIn = SampleDensity(rayPosIn);
-                    totalDensity += SampleDensity(rayPosIn);
-                    //if (densityIn > 0)
-                    //{
-                    //    // Accumulate density to sun
-                    //    float dstInsideBox = RayBoxDist(_BoundMin, _BoundMax, rayPosIn, l.direction).y;
-                    //    float strideOut = dstInsideBox / 10;
-                    //    float densityOut = 0;
-                    //    for (int stepCountOut = 0; stepCountOut < 10; stepCountOut++)
-                    //    {
-                    //        densityOut += SampleDensity(rayPosIn + l.direction * strideOut * stepCountOut);
-                    //    }
-                    //    float transmittanceOut = exp(-densityOut * strideOut);
-                    //    lightEnergy += densityIn * strideIn * transmittanceIn * transmittanceOut * phaseVal;
-                    //}                    
-                    //transmittanceIn *= exp(-densityIn * _CloudAbsorption);
-                    //// Exit early if T is close to zero as further samples won't affect the result much
-                    //if (transmittanceIn < 0.01) {
-                    //    break;
-                    //}
-                }
-                transmittanceIn = exp(-totalDensity * strideIn * max(0, _CloudAbsorption * 0.01));
-                transmittanceIn = pow(transmittanceIn, 8);
-
-                float4 bgCol = tex2D(_MainTex, i.uv);
-
-                if (boxDistInfo.x < sceneDepth && boxDistInfo.y > 0)
-                {
-                    return lerp(_CloudColor, bgCol, transmittanceIn);
+                    float strideIn = distLimit / 10;
+                    float densityIn = 0;
+                    //float transmittanceIn = 1;
+                    float lum = 0;
+                    for (int stepCountIn = 0; stepCountIn < 10; stepCountIn++)
+                    {
+                        float3 rayPosIn = _WorldSpaceCameraPos.xyz + viewDir * (boxDistInfo.x + strideIn * stepCountIn);
+                        densityIn += SampleDensity(rayPosIn);
+                        // Accumulate density to sun
+                        float dstInsideBox = RayBoxDist(_BoundMin, _BoundMax, rayPosIn, l.direction).y;
+                        float strideOut = dstInsideBox / 10;
+                        float densityOut = 0;
+                        for (int stepCountOut = 0; stepCountOut < 10; stepCountOut++)
+                        {
+                            densityOut += SampleDensity(rayPosIn + l.direction * strideOut * stepCountOut);
+                        }
+                        //float transmittanceOut = exp(-densityOut * strideOut);
+                        //float lightEnergy += densityIn * strideIn * transmittanceIn * transmittanceOut;
+                        lum += BeerPowder(densityOut);
+                        //transmittanceIn *= exp(-densityIn * _CloudAbsorption);
+                        //// Exit early if T is close to zero as further samples won't affect the result much
+                        //if (transmittanceIn < 0.01) {
+                        //    break;
+                        //}
+                    }
+                    float transmittanceIn = exp(-densityIn * strideIn * max(0, _CloudAbsorption * 0.01));
+                    transmittanceIn = pow(transmittanceIn, 8);
+                    lum = saturate(1 - lum * BeerPowder(densityIn));
+                    
+                    return lum;
+                    return lerp(float4(lum, lum, lum, 1), bgCol, transmittanceIn);
                     //return SampleDensity(_WorldSpaceCameraPos.xyz + viewDir * boxDistInfo.x);
                 }
 
