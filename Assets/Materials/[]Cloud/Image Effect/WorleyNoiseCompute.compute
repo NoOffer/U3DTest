@@ -1,0 +1,91 @@
+#pragma kernel CSMain
+#pragma kernel CSBlend
+
+RWStructuredBuffer<float3> Points;
+int pointsPerSide;
+
+// Testure Output
+RWTexture3D<float4> ResultTexA;
+RWTexture3D<float4> ResultTexB;
+
+static const int3 offsets[] =
+{
+    // centre
+    int3(0, 0, 0),
+    // ring around center
+    int3(-1, 1, 0),
+    int3(-1, 0, 0),
+    int3(-1, -1, 0),
+    int3(0, 1, 0),
+    int3(0, -1, 0),
+    int3(1, 1, 0),
+    int3(1, 0, 0),
+    int3(1, -1, 0),
+    // front face
+    int3(0, 0, 1),
+    int3(-1, 1, 1),
+    int3(-1, 0, 1),
+    int3(-1, -1, 1),
+    int3(0, 1, 1),
+    int3(0, -1, 1),
+    int3(1, 1, 1),
+    int3(1, 0, 1),
+    int3(1, -1, 1),
+    // back face
+    int3(0, 0, -1),
+    int3(-1, 1, -1),
+    int3(-1, 0, -1),
+    int3(-1, -1, -1),
+    int3(0, 1, -1),
+    int3(0, -1, -1),
+    int3(1, 1, -1),
+    int3(1, 0, -1),
+    int3(1, -1, -1)
+};
+
+int WrapIdxComponent(int originalIdx)
+{
+    if (originalIdx < 0)
+    {
+        return pointsPerSide + originalIdx;
+    }
+    return originalIdx % pointsPerSide;
+}
+
+[numthreads(10, 10, 10)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    float w, h, d;
+    ResultTexA.GetDimensions(w, h, d);
+    float3 pointPos = id / float3(w, h, d) * (pointsPerSide - 0.01);
+    
+    float minDist = 2;
+    for (int i = 0; i < 27; i++)
+    {
+        float3 surroundCellPos = floor(pointPos) + offsets[i];
+        surroundCellPos = float3(
+            WrapIdxComponent(surroundCellPos.x),
+            WrapIdxComponent(surroundCellPos.y),
+            WrapIdxComponent(surroundCellPos.z));
+        float surroundCellIdx = surroundCellPos.x + pointsPerSide * (surroundCellPos.y + pointsPerSide * surroundCellPos.z);
+        float dist = length((pointPos - floor(pointPos)) - (offsets[i] + Points[surroundCellIdx]));
+        if (dist < minDist)
+        {
+            minDist = dist;
+            ResultTexA[id] = float4(normalize((pointPos - floor(pointPos)) - (offsets[i] + Points[surroundCellIdx])).xyz, 1);
+        }
+    }
+    minDist = 1 - minDist / sqrt(2.5);
+
+    ResultTexA[id] = float4(ResultTexA[id].rgb, minDist);
+    //ResultTexB[id] = float4(id, 1);
+}
+
+[numthreads(10, 10, 10)]
+void CSBlend(uint3 id : SV_DispatchThreadID)
+{
+    if (ResultTexB[id].a > ResultTexA[id].a)
+    {
+        ResultTexA[id] = ResultTexB[id];
+    }
+}

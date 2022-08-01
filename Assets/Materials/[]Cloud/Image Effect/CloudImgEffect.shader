@@ -7,12 +7,15 @@ Shader "Nofer/CloudImgEffect"
         _BoundMin ("Start Corner of the Bound", Vector) = (-1, -1, -1)
         _BoundMax ("End Corner of the Bound", Vector) = (1, 1, 1)
 
-        _CloudNoise ("Cloud Noise", 3D) = "" {}
+        _CloudTex ("Cloud Texture", 3D) = "" {}
         _CloudScale ("Scale of Cloud Noise", Vector) = (0, 0, 0)
         _CloudOffset ("Offset of Cloud Noise", Vector) = (0, 0, 0)
         _CloudColor ("Cloud Color", Color) = (1, 1, 1, 1)
 
-        _PhaseParams ("Phase Parameters", Vector) = (0.5, -0.1, 0.5, 0.5)
+        _SampleStepCount ("Sample Step Count", int) = 20
+        _DensityThreshold ("Density Threshold", Range(0, 1)) = 0.5
+
+        //_PhaseParams ("Phase Parameters", Vector) = (0.5, -0.1, 0.5, 0.5)
         _CloudAbsorption ("Light Absorption Through Cloud", float) = 1
     }
     SubShader
@@ -55,12 +58,15 @@ Shader "Nofer/CloudImgEffect"
             float3 _BoundMin;
             float3 _BoundMax;
 
-            sampler3D _CloudNoise;
+            sampler3D _CloudTex;
             float3 _CloudScale;
             float3 _CloudOffset;
             float4 _CloudColor;
 
-            float4 _PhaseParams;
+            float _SampleStepCount;
+            float _DensityThreshold;
+
+            //float4 _PhaseParams;
             float _CloudAbsorption;
 
 	        // ---------------------------------------------------------------------------------------------------------------------------------- Kernels
@@ -89,27 +95,33 @@ Shader "Nofer/CloudImgEffect"
             float SampleDensity (float3 pos)
             {
                 float3 uvw = pos * _CloudScale * 0.01 + _CloudOffset * 0.1;
-                return tex3D(_CloudNoise, uvw).r;
+                return tex3D(_CloudTex, uvw).a;
             }
 
-            // Henyey-Greenstein
-            float hg (float a, float g)
+            float3 SampleNormal (float3 pos)
             {
-                float g2 = g * g;
-                return (1 - g2) / (4 * 3.1415 * pow(1 + g2 - 2 * g * a, 1.5));
+                float3 uvw = pos * _CloudScale * 0.01 + _CloudOffset * 0.1;
+                return tex3D(_CloudTex, uvw).rgb;
             }
 
-            float phase (float a)
-            {
-                float blend = 0.5;
-                float hgBlend = hg(a, _PhaseParams.x) * (1 - blend) + hg(a, -_PhaseParams.y) * blend;
-                return _PhaseParams.z + hgBlend * _PhaseParams.w;
-            }
+            //// Henyey-Greenstein
+            //float hg (float a, float g)
+            //{
+            //    float g2 = g * g;
+            //    return (1 - g2) / (4 * 3.1415 * pow(1 + g2 - 2 * g * a, 1.5));
+            //}
 
-            float BeerPowder (float d)
-            {
-                return 2 * exp(-d) * (1 - exp(-2 * d));
-            }
+            //float phase (float a)
+            //{
+            //    float blend = 0.5;
+            //    float hgBlend = hg(a, _PhaseParams.x) * (1 - blend) + hg(a, -_PhaseParams.y) * blend;
+            //    return _PhaseParams.z + hgBlend * _PhaseParams.w;
+            //}
+
+            //float BeerPowder (float d)
+            //{
+            //    return 2 * exp(-d) * (1 - exp(-2 * d));
+            //}
 
             float4 frag (v2f i) : SV_Target
             {
@@ -132,38 +144,19 @@ Shader "Nofer/CloudImgEffect"
                 float distLimit = min(sceneDepth - boxDistInfo.x, boxDistInfo.y);
                 if (distLimit > 0)
                 {
-                    float strideIn = distLimit / 10;
-                    float densityIn = 0;
-                    //float transmittanceIn = 1;
-                    float lum = 0;
-                    for (int stepCountIn = 0; stepCountIn < 10; stepCountIn++)
+                    float strideIn = distLimit / _SampleStepCount;
+                    [unroll(100)]
+                    for (int stepCountIn = 0; stepCountIn < _SampleStepCount; stepCountIn++)
                     {
                         float3 rayPosIn = _WorldSpaceCameraPos.xyz + viewDir * (boxDistInfo.x + strideIn * stepCountIn);
-                        densityIn += SampleDensity(rayPosIn);
-                        // Accumulate density to sun
-                        float dstInsideBox = RayBoxDist(_BoundMin, _BoundMax, rayPosIn, l.direction).y;
-                        float strideOut = dstInsideBox / 10;
-                        float densityOut = 0;
-                        for (int stepCountOut = 0; stepCountOut < 10; stepCountOut++)
+                        if (step(_DensityThreshold, SampleDensity(rayPosIn)) > 0)
                         {
-                            densityOut += SampleDensity(rayPosIn + l.direction * strideOut * stepCountOut);
+                            float3 normal = SampleNormal(rayPosIn);
+                            float diffuse = saturate(dot(normal, float3(l.direction.x, l.direction.y, l.direction.z)));
+                            float3 ambient = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+                            return saturate(float4(l.color * diffuse + ambient, 1));
                         }
-                        //float transmittanceOut = exp(-densityOut * strideOut);
-                        //float lightEnergy += densityIn * strideIn * transmittanceIn * transmittanceOut;
-                        lum += BeerPowder(densityOut);
-                        //transmittanceIn *= exp(-densityIn * _CloudAbsorption);
-                        //// Exit early if T is close to zero as further samples won't affect the result much
-                        //if (transmittanceIn < 0.01) {
-                        //    break;
-                        //}
                     }
-                    float transmittanceIn = exp(-densityIn * strideIn * max(0, _CloudAbsorption * 0.01));
-                    transmittanceIn = pow(transmittanceIn, 8);
-                    lum = saturate(1 - lum * BeerPowder(densityIn));
-                    
-                    return lum;
-                    return lerp(float4(lum, lum, lum, 1), bgCol, transmittanceIn);
-                    //return SampleDensity(_WorldSpaceCameraPos.xyz + viewDir * boxDistInfo.x);
                 }
 
                 return bgCol;

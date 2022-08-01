@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(CityGenerator))]
-public class CityEditor : Editor
+public class CityGeneratorEditor : Editor
 {
     private CityGenerator targetGenerator;
 
