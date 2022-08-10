@@ -19,6 +19,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BgTex:
+        m_Texture: {fileID: 2800000, guid: 7d645a4bab2b7e9418bbafd9dfb87582, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Gradient:
         m_Texture: {fileID: 2800000, guid: ffa941e211dcfb34e82803433f518b10, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -28,7 +32,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 2800000, guid: b7947b5cd3f98454ab4ba1010f4e1ecb, type: 3}
+        m_Texture: {fileID: 2800000, guid: b550826c9dc421e44be2c1f1b0ea8ddd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
@@ -40,8 +44,9 @@ Material:
     - _IOR: 2
     - _MaxDist: 1000
     - _Radius: 15
+    - _Speed: 1
     - _SphereRadius: 15
     m_Colors:
     - _CenterPos: {r: 0, g: 20, b: 0, a: 1}
-    - _RingColor: {r: 1, g: 0.7404511, b: 0, a: 1}
+    - _RingColor: {r: 1, g: 0.8156753, b: 0, a: 1}
   m_BuildTextureStacks: []

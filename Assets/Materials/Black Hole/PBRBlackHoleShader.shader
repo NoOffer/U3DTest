@@ -12,6 +12,8 @@ Shader "Nofer/PBRBlackHoleShader"
         _DiskRadius ("Disk Radius", float) = 30
         _IOR ("IOR", float) = 0
 
+        _Speed ("Speed", float) = 15
+
         // Ray Marching Settings
         _MaxDist ("Max Distance", float) = 100
     }
@@ -60,6 +62,8 @@ Shader "Nofer/PBRBlackHoleShader"
             float _DiskRadius;
             float _IOR;
 
+            float _Speed;
+
             float _MaxDist;
 
 	        // ---------------------------------------------------------------------------------------------------------------------------------- Kernels
@@ -91,9 +95,7 @@ Shader "Nofer/PBRBlackHoleShader"
                     if (dist < MIN_DIST)
                     {
                         float3 rawUV = (currentPos - _CenterPos) / _DiskRadius;
-                        float2 processedUV = float2(rawUV.x, rawUV.z);
-                        processedUV = float2(atan2(processedUV.x, processedUV.y) / 6.283, length(processedUV));
-                        return float4(processedUV, 0, depth);
+                        return float4(rawUV, depth);
                     }
                     if (depth > _MaxDist)
                     {
@@ -106,6 +108,11 @@ Shader "Nofer/PBRBlackHoleShader"
                 }
                 return float4(0, 0, 0, depth);
             }
+
+            //float easeInOut (float t)
+            //{
+            //    return sin(3.1415 * (t - 0.5)) / 2 + 0.5;
+            //}
 
             float4 frag (v2f i) : SV_Target
             {
@@ -126,11 +133,20 @@ Shader "Nofer/PBRBlackHoleShader"
                 }
                 if (diskInfo.w < _MaxDist)
                 {
-                    float centralRing = saturate(1.5 - diskInfo.y * 1.5);
-                    float4 ringCol = lerp(tex2D(_NoiseTex, diskInfo.xy * float2(1, 2)) * centralRing, float4(1, 1, 1, 1), pow(centralRing, 5));
-                    ringCol = 2 * ringCol;
-                    //ringCol *= lerp(_RingColor, float4(1, 1, 1, 1), centralRing);
-                    //return pow(saturate(1.5 - diskInfo.y * 1.5), 5);
+                    float2 processedUV = float2(diskInfo.x, diskInfo.z);
+                    processedUV = float2(atan2(processedUV.x, processedUV.y) / 6.283, length(processedUV));
+                 
+                    float centralRing = saturate(1.5 - processedUV.y * 1.5);
+                    processedUV.x += _Time.x * _Speed;
+                    //float3 normal = tex3D(_NoiseTex, float3(processedUV.x, processedUV.y * 2, 0.5));
+                    
+                    //float4 ringCol = 
+                    //    lerp(saturate(dot(-normal, normalize(diskInfo.xyz)) + 0.2) * centralRing, 1, pow(centralRing, 5)) * float4(2, 2, 2, 1);
+                    float4 ringCol = tex2D(_NoiseTex, float2(processedUV.x, processedUV.y * 2));
+                    ringCol = lerp(ringCol * centralRing, 1, pow(centralRing, 5)) * float4(2, 2, 2, 1);
+                    ringCol *= lerp(_RingColor, float4(1, 1, 1, 1), centralRing);
+
+                    //return float4(processedUV.x, processedUV.y * 2, 0, 1);
                     return ringCol;
                 }
                 float4 col = tex2D(_MainTex, i.uv);

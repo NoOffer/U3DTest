@@ -23,10 +23,20 @@ public class WorleyNoiseGenerator : MonoBehaviour
     // --------------------------------------------------------------------------------------------------------------------------------------- Updates
 
     // ---------------------------------------------------------------------------------------------------------------------------- Featured Functions
+    private void InitializeRT()
+    {
+        targetRT = new RenderTexture(resolution, resolution, 0);
+        targetRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        targetRT.volumeDepth = resolution;
+        targetRT.enableRandomWrite = true;
+        targetRT.wrapMode = TextureWrapMode.Repeat;
+        targetRT.Create();
+    }
+
     public void GenerateWorley()
     {
         // Initialize Texture A
-        targetRT = InitializeRT();
+        InitializeRT();
         worleyNoiseCompute.SetTexture(0, "ResultTex", targetRT);
         // Create Texture
         SetUpWorleyCompute(numOfCellPerAxis);
@@ -37,17 +47,6 @@ public class WorleyNoiseGenerator : MonoBehaviour
         {
             rtDisplayMat.SetTexture("_NoiseTex", targetRT);
         }
-    }
-
-    private RenderTexture InitializeRT()
-    {
-        RenderTexture targetRT = new RenderTexture(resolution, resolution, 0);
-        targetRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-        targetRT.volumeDepth = resolution;
-        targetRT.enableRandomWrite = true;
-        targetRT.wrapMode = TextureWrapMode.Repeat;
-        targetRT.Create();
-        return targetRT;
     }
 
     private void SetUpWorleyCompute(int numOfCellPerAxis)
