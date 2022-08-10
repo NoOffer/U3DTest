@@ -1,18 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
 public class WorleyNoiseGenerator : MonoBehaviour
 {
     [SerializeField] private ComputeShader worleyNoiseCompute;
-    [SerializeField] private int numOfCellPerAxis_A;
-    [SerializeField] private int numOfCellPerAxis_B;
+    [SerializeField] private int numOfCellPerAxis;
 
     [Range(10f, 1024f)]
     [SerializeField] private int resolution;
-    [SerializeField] private RenderTexture targetRT_A;
-    [SerializeField] private RenderTexture targetRT_B;
+    [SerializeField] private RenderTexture targetRT;
 
     [SerializeField] private Material cloudImgEffectMat;
     [SerializeField] private Material rtDisplayMat;
@@ -20,7 +17,7 @@ public class WorleyNoiseGenerator : MonoBehaviour
     // -------------------------------------------------------------------------------------------------------------------------------- Initialization
     void Awake()
     {
-        GenerateWorley();
+        //GenerateWorley();
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------- Updates
@@ -29,27 +26,16 @@ public class WorleyNoiseGenerator : MonoBehaviour
     public void GenerateWorley()
     {
         // Initialize Texture A
-        targetRT_A = InitializeRT();
-        worleyNoiseCompute.SetTexture(0, "ResultTexA", targetRT_A);
+        targetRT = InitializeRT();
+        worleyNoiseCompute.SetTexture(0, "ResultTex", targetRT);
         // Create Texture
-        SetUpWorleyCompute(numOfCellPerAxis_A);
-
-        // Initialize Texture B
-        targetRT_B = InitializeRT();
-        worleyNoiseCompute.SetTexture(0, "ResultTexA", targetRT_B);
-        // Create Texture
-        SetUpWorleyCompute(numOfCellPerAxis_B);
-
-        //// Blend Both Textures
-        //worleyNoiseCompute.SetTexture(1, "ResultTexA", targetRT_A);
-        //worleyNoiseCompute.SetTexture(1, "ResultTexB", targetRT_B);
-        //worleyNoiseCompute.Dispatch(1, resolution / 10, resolution / 10, resolution / 10);
+        SetUpWorleyCompute(numOfCellPerAxis);
 
         // Assign Textures
-        cloudImgEffectMat.SetTexture("_CloudTex", targetRT_A);
+        cloudImgEffectMat.SetTexture("_CloudTex", targetRT);
         if (rtDisplayMat != null)
         {
-            rtDisplayMat.SetTexture("_MainTex", targetRT_A);
+            rtDisplayMat.SetTexture("_NoiseTex", targetRT);
         }
     }
 

@@ -1,12 +1,10 @@
 #pragma kernel CSMain
-#pragma kernel CSBlend
 
 RWStructuredBuffer<float3> Points;
 int pointsPerSide;
 
 // Testure Output
-RWTexture3D<float4> ResultTexA;
-RWTexture3D<float4> ResultTexB;
+RWTexture3D<float4> ResultTex;
 
 static const int3 offsets[] =
 {
@@ -56,7 +54,7 @@ int WrapIdxComponent(int originalIdx)
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
     float w, h, d;
-    ResultTexA.GetDimensions(w, h, d);
+    ResultTex.GetDimensions(w, h, d);
     float3 pointPos = id / float3(w, h, d) * (pointsPerSide - 0.01);
     
     float minDist = 2;
@@ -72,20 +70,11 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         if (dist < minDist)
         {
             minDist = dist;
-            ResultTexA[id] = float4(normalize((pointPos - floor(pointPos)) - (offsets[i] + Points[surroundCellIdx])).xyz, 1);
+            ResultTex[id] = float4(normalize((pointPos - floor(pointPos)) - (offsets[i] + Points[surroundCellIdx])).xyz, 1);
         }
     }
     minDist = 1 - minDist / sqrt(2.5);
 
-    ResultTexA[id] = float4(ResultTexA[id].rgb, minDist);
+    ResultTex[id] = float4(ResultTex[id].rgb, minDist);
     //ResultTexB[id] = float4(id, 1);
-}
-
-[numthreads(10, 10, 10)]
-void CSBlend(uint3 id : SV_DispatchThreadID)
-{
-    if (ResultTexB[id].a > ResultTexA[id].a)
-    {
-        ResultTexA[id] = ResultTexB[id];
-    }
 }
