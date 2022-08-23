@@ -310,18 +310,18 @@ Shader "Nofer/GeomGrassShader"
                         float segmentForward = pow(t, _BladeCurvature) * forward;
 	                    float segmentWidth = width * (1 - t);
                     
-                        o.pos = mul(unity_ObjectToWorld, pos) + float4(mul(transformationMatrix, float3(-segmentWidth, segmentForward, segmentHeight)), 0);
+                        o.pos = mul(UNITY_MATRIX_M, pos) + float4(mul(transformationMatrix, float3(-segmentWidth, segmentForward, segmentHeight)), 0);
                         o.pos = mul(UNITY_MATRIX_VP, o.pos);
                         o.uv = float2(0, t);
                         triStream.Append(o);
                 
-                        o.pos = mul(unity_ObjectToWorld, pos) + float4(mul(transformationMatrix, float3(segmentWidth, segmentForward, segmentHeight)), 0);
+                        o.pos = mul(UNITY_MATRIX_M, pos) + float4(mul(transformationMatrix, float3(segmentWidth, segmentForward, segmentHeight)), 0);
                         o.pos = mul(UNITY_MATRIX_VP, o.pos);
                         o.uv = float2(1, t);
                         triStream.Append(o);
                     }
 
-                    o.pos = mul(unity_ObjectToWorld, pos) + float4(mul(transformationMatrix, float3(0, forward, height)), 0);
+                    o.pos = mul(UNITY_MATRIX_M, pos) + float4(mul(transformationMatrix, float3(0, forward, height)), 0);
                     o.pos = mul(UNITY_MATRIX_VP, o.pos);
                     o.uv = float2(0.5, 1);
                     triStream.Append(o);
