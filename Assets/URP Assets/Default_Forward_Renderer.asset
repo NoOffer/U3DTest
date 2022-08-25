@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36f622bc8a329c4a9f18e9dfca563b2, type: 3}
   m_Name: Outline
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     renderPassEvent: 300
     blitMaterial: {fileID: 2100000, guid: 397cf301a4f144b479a3ce1a5edd15de, type: 2}
