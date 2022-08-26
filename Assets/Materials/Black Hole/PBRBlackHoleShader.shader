@@ -77,7 +77,7 @@ Shader "Nofer/PBRBlackHoleShader"
                 return o;
             }
 
-            float getDickDist (float3 pos)
+            float getDiskDist (float3 pos)
             {
                 float verticalDist = pos.y - _CenterPos.y;
                 float horizontalDist = max(length(pos.xz - _CenterPos.xz) - _DiskRadius, 0);
@@ -90,7 +90,7 @@ Shader "Nofer/PBRBlackHoleShader"
                 float depth = 0;
                 for (int i = 0; i < MAX_STEP; i++)
                 {
-                    float dist = getDickDist(currentPos);
+                    float dist = getDiskDist(currentPos);
 
                     if (dist < MIN_DIST)
                     {

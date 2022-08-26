@@ -71,12 +71,12 @@ Shader "Nofer/BlackHoleShader"
                 float3 oc = _CenterPos - _WorldSpaceCameraPos.xyz;
                 float3 poc = dot(oc, normalize(i.viewVector)) * normalize(i.viewVector);
                 float d = length(oc - poc);
-                float2 centralVector = normalize(mul(unity_CameraProjection, mul(unity_WorldToCamera, normalize(oc))).xy - (i.uv * 2 - 1));
+                float2 centralVector = normalize(mul(unity_CameraProjection, mul(unity_WorldToCamera, float4(normalize(oc), 1))).xy - (i.uv * 2 - 1));
 
                 if (d < _EHRadius)
                 {
                     float sphereDepth = length(poc) - sqrt(_EHRadius * _EHRadius - d * d);
-                    float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams);
+                    float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xy / i.screenPos.w), _ZBufferParams);
                     if (sphereDepth < sceneDepth)
                     {
                         return 0;

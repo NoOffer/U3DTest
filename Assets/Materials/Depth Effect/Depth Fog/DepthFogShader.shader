@@ -53,7 +53,7 @@ Shader "Nofer/DepthFogShader"
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_MainTex, i.uv);
-                float depth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams) - i.screenPos.w;
+                float depth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xy / i.screenPos.w), _ZBufferParams) - i.screenPos.w;
                 //float depth = Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams);
                 return lerp(col, _FogColor, clamp(1 - pow(2, -depth * _FogDensity / 1000), 0, _MaxFog));
             }

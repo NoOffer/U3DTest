@@ -145,7 +145,7 @@ Shader "Nofer/GerstnerWaveShader"
 
             float4 frag (v2f i) : SV_Target
             {
-                float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams);
+                float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xy / i.screenPos.w), _ZBufferParams);
                 // Get view direction
                 float3 viewRay = _WorldSpaceCameraPos.xyz - i.vertexWS.xyz;
                 float4 sceneColor = tex2D(_CameraOpaqueTexture, i.screenPos.xy / i.screenPos.w);
@@ -158,7 +158,7 @@ Shader "Nofer/GerstnerWaveShader"
                 float specular = pow(saturate(dot(i.normalWS, h)), exp2(10 * _Smoothness + 1)) * diffuse * _Smoothness;
                 float3 ambient = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
 
-                float4 waterColor = float4(_SurfaceColor * diffuse + l.color.rgb * specular, 1);
+                float4 waterColor = float4(_SurfaceColor.rgb * diffuse + l.color.rgb * specular, 1);
                 
                 if (length(viewRay) > sceneDepth)
                 {

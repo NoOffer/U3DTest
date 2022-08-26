@@ -80,7 +80,7 @@ Shader "CustomShaders/CelShader"
                 //#endif
 
                 // Get light
-                Light l = GetMainLight(TransformWorldToShadowCoord(i.vertexWS));
+                Light l = GetMainLight(TransformWorldToShadowCoord(i.vertexWS.xyz));
 
                 // Calculate shadow
                 float shadow = step(0.5, saturate(l.shadowAttenuation));

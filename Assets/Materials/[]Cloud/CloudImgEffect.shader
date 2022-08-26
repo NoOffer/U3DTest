@@ -132,7 +132,7 @@ Shader "Nofer/CloudImgEffect"
                 // Calculate the distance to, and travelled in the box
                 float2 boxDistInfo = RayBoxDist(_BoundMin, _BoundMax, _WorldSpaceCameraPos.xyz, viewDir);
                 // Calculate scene depth
-                float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w), _ZBufferParams);
+                float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xy / i.screenPos.w), _ZBufferParams);
                 sceneDepth = sceneDepth * length(i.viewVector);
 
                 Light l = GetMainLight();

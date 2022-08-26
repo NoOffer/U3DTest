@@ -60,11 +60,11 @@ Shader "Nofer/OutlineImageEffect"
                     tex2D(_CameraNormalsTexture, i.uv - float2(1, -1) / _ScreenParams.xy).xy -
                     tex2D(_CameraNormalsTexture, i.uv + float2(1, -1) / _ScreenParams.xy).xy;
                 float depthDiffX =
-                    Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w - float3(float2(1, 1) / _ScreenParams.xy, 0)), _ZBufferParams) - 
-                    Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w + float3(float2(1, 1) / _ScreenParams.xy, 0)), _ZBufferParams);
+                    Linear01Depth(SampleSceneDepth(i.uv - float2(1, 1) / _ScreenParams.xy), _ZBufferParams) - 
+                    Linear01Depth(SampleSceneDepth(i.uv + float2(1, 1) / _ScreenParams.xy), _ZBufferParams);
                 float depthDiffY =
-                    Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w - float3(float2(1, -1) / _ScreenParams.xy, 0)), _ZBufferParams) - 
-                    Linear01Depth(SampleSceneDepth(i.screenPos.xyz / i.screenPos.w + float3(float2(1, -1) / _ScreenParams.xy, 0)), _ZBufferParams);
+                    Linear01Depth(SampleSceneDepth(i.uv - float2(1, 1) / _ScreenParams.xy), _ZBufferParams) - 
+                    Linear01Depth(SampleSceneDepth(i.uv + float2(1, 1) / _ScreenParams.xy), _ZBufferParams);
 
                 float outline = saturate(
                     length(normalDiffX) * length(normalDiffY) * _NormalDiffMultiplier +
