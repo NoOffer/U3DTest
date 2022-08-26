@@ -1,5 +1,26 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7824557540208390928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f36f622bc8a329c4a9f18e9dfca563b2, type: 3}
+  m_Name: NewDrawFullscreenFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    renderPassEvent: 300
+    blitMaterial: {fileID: 2100000, guid: 915a234b15b8da347aa4b4f695178929, type: 2}
+    blitMaterialPassIndex: -1
+    sourceType: 0
+    destinationType: 0
+    sourceTextureId: _SourceTexture
+    destinationTextureId: _DestinationTexture
 --- !u!114 &-1688682926901582066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37,8 +58,9 @@ MonoBehaviour:
   - {fileID: 3313549508861369899}
   - {fileID: 5839893178954870722}
   - {fileID: -1688682926901582066}
+  - {fileID: -7824557540208390928}
   - {fileID: 5847873913718173366}
-  m_RendererFeatureMap: 2b1e5aedb817fc2dc2efd4b9e7770b510ea7c333d39790e8b6ee715657d22751
+  m_RendererFeatureMap: 2b1e5aedb817fc2dc2efd4b9e7770b510ea7c333d39790e8f04c469b5f966993b6ee715657d22751
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
   shaders:
