@@ -23,13 +23,6 @@ Shader "Nofer/ScannerShader"
             HLSLPROGRAM
 
 	        // ----------------------------------------------------------------------------------------------------------------------------------- Pragma
-            #pragma shader_feature _AdditionalLights
-
-            #pragma multi_compile _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _MAIN_LIGHT_SHADOWS_CASCADE
-            #pragma multi_compile _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-            #pragma multi_compile _SHADOWS_SOFT
-
             #pragma vertex vert
             #pragma fragment frag
 

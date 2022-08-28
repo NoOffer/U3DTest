@@ -32,10 +32,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - FogDensity: 0.6
+    - FogDensity: 0.5
     - Vector1_8024bef74ba34bf6b1d9e3861b66a732: 3.2
     - Vector1_926cdf06548c451287d50e8799633f88: 0.573
     - Vector1_b45869a70162423dafa0ff8d8c715751: 1.5
     m_Colors:
-    - Color_2493e5d5c9ce4ccdad30a820bf6149ad: {r: 0, g: 0, b: 0, a: 0}
+    - Color_2493e5d5c9ce4ccdad30a820bf6149ad: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
