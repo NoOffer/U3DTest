@@ -9,10 +9,15 @@ Shader "CustomShaders/CelShader"
         _DiffuseThreshold ("Diffuse Threshold",  Range(0.0, 1.0)) = 0.5
         _SpecularThreshold ("Specular Threshold",  Range(0.0, 1.0)) = 0.5
         _RimThreshold ("Rim Threshold",  Range(0.0, 1.0)) = 0.5
+        _ShadowThreshold ("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
 
         //_OutlineScaler ("Outline Scaler",  Range(0.0, 1.0)) = 0.5
         //_OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
     }
+
+    HLSLINCLUDE
+    ENDHLSL
+
     SubShader
     {
         Tags { "RenderType"="Opaque" }
@@ -23,7 +28,10 @@ Shader "CustomShaders/CelShader"
         {
             Cull Back
 
-            Tags{"LightMode" = "UniversalForward"}
+            Tags
+            {
+                "LightMode" = "UniversalForward"
+            }
 
             HLSLPROGRAM
             #pragma vertex vert
@@ -34,8 +42,7 @@ Shader "CustomShaders/CelShader"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
-            //#include "AutoLight.cginc"
-
+    
             struct a2v
             {
                 float4 vertexOS : POSITION;
@@ -58,6 +65,7 @@ Shader "CustomShaders/CelShader"
             float _DiffuseThreshold;
             float _SpecularThreshold;
             float _RimThreshold;
+            float _ShadowThreshold;
 
             v2f vert (a2v v)
             {
@@ -65,25 +73,17 @@ Shader "CustomShaders/CelShader"
                 o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS);
                 o.vertexWS = mul(UNITY_MATRIX_M, v.vertexOS);
                 o.normalWS = mul((float3x3)UNITY_MATRIX_M, v.normalOS);
-                //Light l = GetMainLight();
-                //o.vertexCS = mul(UNITY_MATRIX_VP, ApplyShadowBias(o.vertexWS.xyz, o.normalWS.xyz, l.direction));
 
                 return o;
             }
 
             float4 frag (v2f i) : SV_Target
             {
-                //#if SHADOWS_SCREEN
-                //    float4 shadowCoord = ComputeScreenPos(i.vertexCS);
-                //#else
-                //    float4 shadowCoord = TransformWorldToShadowCoord(i.vertexWS);
-                //#endif
-
                 // Get light
                 Light l = GetMainLight(TransformWorldToShadowCoord(i.vertexWS.xyz));
 
                 // Calculate shadow
-                float shadow = step(0.5, saturate(l.shadowAttenuation));
+                float shadow = step(_ShadowThreshold, saturate(l.shadowAttenuation));
 
                 // Calculate diffuse
                 float diffuse = saturate(dot(i.normalWS, l.direction));
@@ -109,62 +109,14 @@ Shader "CustomShaders/CelShader"
 
                 float4 outColor = float4(l.color.rgb * (diffuse + max(specular, rim)) + ambient, 1) * _SurfaceColor;
 
-                // Calculate outline
-                //float outline = 1 - step(_OutlineThreshold, dot(normalize(i.normalWS), viewDirWS));
-
-                //return float4(specular, specular, specular, 1);
-                //return lerp(outColor, _OutlineColor, outline);
-                return outColor;
+                return float4(shadow, shadow, shadow, 1);
+                //return outColor;
             }
+
             ENDHLSL
         }
 
-        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
-
-        //// outline
-        //Pass
-        //{
-        //    Cull Front
-
-        //    Tags{"LightMode" = "SRPDefaultUnlit"}
-
-        //    CGPROGRAM
-
-        //    #pragma vertex vert
-        //    #pragma fragment frag
-
-        //    struct a2v 
-        //    {
-        //        float4 vertex : POSITION;
-        //        float3 normal : NORMAL;
-        //    }; 
-
-        //    struct v2f 
-        //    {
-        //        float4 pos : SV_POSITION;
-        //    };
-
-        //    float _OutlineScaler;
-        //    float4 _OutlineColor;
-
-        //    v2f vert (a2v v) 
-        //    {
-        //        v2f o;
-
-        //        float4 pos = mul(UNITY_MATRIX_MV, v.vertex); 
-        //        float3 normal = mul((float3x3)UNITY_MATRIX_M, v.normal);  
-        //        normal.z = -0.5;
-        //        pos += float4(normalize(normal), 0) * _OutlineScaler;
-        //        o.pos = mul(UNITY_MATRIX_P, pos);
-
-        //        return o;
-        //    }
-
-        //    float4 frag(v2f i) : SV_Target 
-        //    { 
-        //        return float4(_OutlineColor.rgb, 1);               
-        //    }
-        //    ENDCG
-        //}
+        // Shadow
+        UsePass "VertexLit/SHADOWCASTER"
     }
 }

@@ -321,10 +321,10 @@ Shader "Nofer/GeomGrassShader"
                         triStream.Append(o);
                     }
 
-                    o.pos = mul(UNITY_MATRIX_M, pos) + float4(mul(transformationMatrix, float3(0, forward, height)), 0);
-                    o.pos = mul(UNITY_MATRIX_VP, o.pos);
-                    o.uv = float2(0.5, 1);
-                    triStream.Append(o);
+                    //o.pos = mul(UNITY_MATRIX_M, pos) + float4(mul(transformationMatrix, float3(0, forward, height)), 0);
+                    //o.pos = mul(UNITY_MATRIX_VP, o.pos);
+                    //o.uv = float2(0.5, 1);
+                    //triStream.Append(o);
 
                     // Restart strip
                     triStream.RestartStrip();

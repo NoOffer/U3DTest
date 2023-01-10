@@ -16,7 +16,7 @@ Shader "Nofer/CloudImgEffect"
         _DensityThreshold ("Density Threshold", Range(0, 1)) = 0.5
 
         //_PhaseParams ("Phase Parameters", Vector) = (0.5, -0.1, 0.5, 0.5)
-        _CloudAbsorption ("Light Absorption Through Cloud", float) = 1
+        _CloudAbsorption ("Light Absorption Through Cloud", Range(0.1, 10)) = 1
     }
     SubShader
     {
@@ -75,7 +75,7 @@ Shader "Nofer/CloudImgEffect"
                 v2f o;
                 o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS);
                 o.uv = v.uv;
-                o.viewVector = mul(unity_CameraToWorld, float4(mul(unity_CameraInvProjection, float4(v.uv * 2 - 1, 0, -1)).xyz, 0));
+                o.viewVector = mul(unity_CameraToWorld, float4(mul(unity_CameraInvProjection, float4(v.uv * 2 - 1, 0, -1)).xyz, 0)).xyz;
                 o.screenPos = ComputeScreenPos(o.vertexCS);
                 return o;
             }
@@ -118,10 +118,25 @@ Shader "Nofer/CloudImgEffect"
             //    return _PhaseParams.z + hgBlend * _PhaseParams.w;
             //}
 
-            //float BeerPowder (float d)
-            //{
-            //    return 2 * exp(-d) * (1 - exp(-2 * d));
-            //}
+            float BeerPowder (float d)
+            {
+                return 2 * exp(-d) * (1 - exp(-2 * d));
+            }
+
+            float LightMarch (float3 origin, float3 lightDir)
+            {
+                float3 currentPos = origin;
+                float distLimit = RayBoxDist(_BoundMin, _BoundMax, origin, lightDir).y;
+                float totalDensity = 0;
+                float stride = distLimit / _SampleStepCount;
+                [unroll(100)]
+                for (int stepCount = 0; stepCount < _SampleStepCount; stepCount++)
+                {
+                    currentPos += lightDir * stride;
+                    totalDensity += SampleDensity(currentPos);
+                }
+                return exp(-totalDensity * _CloudAbsorption);
+            }
 
             float4 frag (v2f i) : SV_Target
             {
@@ -133,7 +148,7 @@ Shader "Nofer/CloudImgEffect"
                 float2 boxDistInfo = RayBoxDist(_BoundMin, _BoundMax, _WorldSpaceCameraPos.xyz, viewDir);
                 // Calculate scene depth
                 float sceneDepth = LinearEyeDepth(SampleSceneDepth(i.screenPos.xy / i.screenPos.w), _ZBufferParams);
-                sceneDepth = sceneDepth * length(i.viewVector);
+                sceneDepth *= length(i.viewVector);
 
                 Light l = GetMainLight();
 
@@ -141,25 +156,28 @@ Shader "Nofer/CloudImgEffect"
                 //float phaseVal = phase(dot(viewDir, l.direction));
                 
                 // Accumulate density into cloud
+                float totalDensity = 0;
+                float lightEnergy = 0;
                 float distLimit = min(sceneDepth - boxDistInfo.x, boxDistInfo.y);
                 if (distLimit > 0)
                 {
-                    float strideIn = distLimit / _SampleStepCount;
+                    float stride = distLimit / _SampleStepCount;
+                    float3 rayPos = _WorldSpaceCameraPos.xyz + viewDir * boxDistInfo.x;
                     [unroll(100)]
-                    for (int stepCountIn = 0; stepCountIn < _SampleStepCount; stepCountIn++)
+                    for (int stepCount = 0; stepCount < _SampleStepCount; stepCount++)
                     {
-                        float3 rayPosIn = _WorldSpaceCameraPos.xyz + viewDir * (boxDistInfo.x + strideIn * stepCountIn);
-                        if (step(_DensityThreshold, SampleDensity(rayPosIn)) > 0)
-                        {
-                            float3 normal = SampleNormal(rayPosIn);
-                            float diffuse = saturate(dot(normal, float3(l.direction.x, l.direction.y, l.direction.z)));
-                            float3 ambient = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-                            return saturate(float4(l.color * diffuse + ambient, 1));
-                        }
+                        rayPos += viewDir * stride;
+                        float density = SampleDensity(rayPos);
+                        float transmittance = LightMarch(rayPos, l.direction);
+                        totalDensity += density;
+                        lightEnergy += transmittance * stride;
                     }
+                    return exp(-totalDensity * _CloudAbsorption);
+                    return BeerPowder(totalDensity / _SampleStepCount);
                 }
-
                 return bgCol;
+
+                //return BeerPowder(totalDensity / 10);
                 //return SampleDensity(_WorldSpaceCameraPos.xyz + viewDir * boxDistInfo.x);
             }
             ENDHLSL

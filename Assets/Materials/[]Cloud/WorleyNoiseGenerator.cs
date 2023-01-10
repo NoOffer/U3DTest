@@ -5,11 +5,15 @@ using UnityEngine;
 public class WorleyNoiseGenerator : MonoBehaviour
 {
     [SerializeField] private ComputeShader worleyNoiseCompute;
-    [SerializeField] private int numOfCellPerAxis;
+    [SerializeField] private int numOfCellPerAxis_A;
+    [SerializeField] private int numOfCellPerAxis_B;
 
-    [Range(10f, 1024f)]
+    [Range(10f, 300f)]
     [SerializeField] private int resolution;
-    [SerializeField] private RenderTexture targetRT;
+    [SerializeField] private RenderTexture targetRT_A;
+    [SerializeField] private RenderTexture targetRT_B;
+    [Range(0, 1)]
+    [SerializeField] private float blendFactor;
 
     [SerializeField] private Material cloudImgEffectMat;
     [SerializeField] private Material rtDisplayMat;
@@ -23,7 +27,7 @@ public class WorleyNoiseGenerator : MonoBehaviour
     // --------------------------------------------------------------------------------------------------------------------------------------- Updates
 
     // ---------------------------------------------------------------------------------------------------------------------------- Featured Functions
-    private void InitializeRT()
+    private void InitializeRT(ref RenderTexture targetRT)
     {
         targetRT = new RenderTexture(resolution, resolution, 0);
         targetRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
@@ -33,24 +37,10 @@ public class WorleyNoiseGenerator : MonoBehaviour
         targetRT.Create();
     }
 
-    public void GenerateWorley()
+    private void SetUpWorleyCompute(int numOfCellPerAxis, RenderTexture targetRT)
     {
-        // Initialize Texture A
-        InitializeRT();
         worleyNoiseCompute.SetTexture(0, "ResultTex", targetRT);
-        // Create Texture
-        SetUpWorleyCompute(numOfCellPerAxis);
 
-        // Assign Textures
-        cloudImgEffectMat.SetTexture("_CloudTex", targetRT);
-        if (rtDisplayMat != null)
-        {
-            rtDisplayMat.SetTexture("_NoiseTex", targetRT);
-        }
-    }
-
-    private void SetUpWorleyCompute(int numOfCellPerAxis)
-    {
         Vector3[] points = new Vector3[numOfCellPerAxis * numOfCellPerAxis * numOfCellPerAxis];
 
         for (int i = 0; i < numOfCellPerAxis; i++)
@@ -74,5 +64,28 @@ public class WorleyNoiseGenerator : MonoBehaviour
 
         worleyNoiseCompute.Dispatch(0, resolution / 10, resolution / 10, resolution / 10);
         pointsBuffer.Dispose();
+    }
+
+    public void GenerateWorley()
+    {
+        // Initialize Texture
+        InitializeRT(ref targetRT_A);
+        InitializeRT(ref targetRT_B);
+        // Create Texture
+        SetUpWorleyCompute(numOfCellPerAxis_A, targetRT_A);
+        SetUpWorleyCompute(numOfCellPerAxis_B, targetRT_B);
+
+        // Blend
+        worleyNoiseCompute.SetTexture(1, "ResultTex", targetRT_A);
+        worleyNoiseCompute.SetTexture(1, "InputTex", targetRT_B);
+        worleyNoiseCompute.SetFloat("blendFactor", blendFactor);
+        worleyNoiseCompute.Dispatch(1, resolution / 10, resolution / 10, resolution / 10);
+
+        // Assign Textures
+        cloudImgEffectMat.SetTexture("_CloudTex", targetRT_A);
+        if (rtDisplayMat != null)
+        {
+            rtDisplayMat.SetTexture("_MainTex", targetRT_A);
+        }
     }
 }

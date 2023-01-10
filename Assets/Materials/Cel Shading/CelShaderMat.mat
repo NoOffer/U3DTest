@@ -40,19 +40,26 @@ Material:
     - Vector1_f75e5b09050145f08c66e48fd1629a44: 200
     - _BrightnessScaler: 0.05
     - _DiffuseThreshold: 0.1
+    - _Glossiness: 32
     - _MaxSaturation: 1
     - _MinSaturation: 0
     - _OutlineScaler: 0.03
     - _OutlineThreshold: 0.15
+    - _RimAmount: 0.7
     - _RimCoe: 1
     - _RimThreshold: 0.7
     - _SaturationScaler: 0.447
+    - _ShadowThreshold: 0.5
     - _Smoothness: 0.7
     - _SmoothnessCoe: 1
     - _Specular: 15
     - _SpecularThreshold: 0.1
     - _ToonIntensity: 1
     m_Colors:
+    - _AmbientColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
     - _SurfaceColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

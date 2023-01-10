@@ -1,9 +1,12 @@
 #pragma kernel CSMain
+#pragma kernel CSBlend
 
 RWStructuredBuffer<float3> Points;
 int pointsPerSide;
+float blendFactor;
 
-// Testure Output
+// Testures
+RWTexture3D<float4> InputTex;
 RWTexture3D<float4> ResultTex;
 
 static const int3 offsets[] =
@@ -41,7 +44,7 @@ static const int3 offsets[] =
     int3(1, -1, -1)
 };
 
-int WrapIdxComponent(int originalIdx)
+uint WrapIdxComponent(uint originalIdx)
 {
     if (originalIdx < 0)
     {
@@ -76,5 +79,12 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     minDist = 1 - minDist / sqrt(2.5);
 
     ResultTex[id] = float4(ResultTex[id].rgb, minDist);
+    //ResultTexB[id] = float4(id, 1);
+}
+
+[numthreads(10, 10, 10)]
+void CSBlend(uint3 id : SV_DispatchThreadID)
+{
+    ResultTex[id] = lerp(ResultTex[id], InputTex[id], blendFactor);
     //ResultTexB[id] = float4(id, 1);
 }

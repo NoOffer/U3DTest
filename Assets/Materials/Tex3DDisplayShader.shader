@@ -3,7 +3,7 @@ Shader "Nofer/Tex3DDisplay"
     Properties
     {
         _MainTex ("Texture", 3D) = "" {}
-        _W ("W", Range(0, 1)) = 0.5
+        _W ("W", Range(1, 50)) = 1
         _TestVal ("Test Value", float) = 0.5
     }
     SubShader

@@ -24,8 +24,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WindMap:
-        m_Texture: {fileID: 2800000, guid: 88d1e420e48d6004e9887a01f6f1b647, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Texture: {fileID: 2800000, guid: 2502061d35251474b9769b6e1109154c, type: 3}
+        m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BladeCurvature: 2
@@ -37,10 +37,10 @@ Material:
     - _GrassSegment: 1
     - _MaxFullTessDist: 50
     - _TessAttenDist: 10
-    - _TessellationLevel: 1
-    - _WindStrength: 0.1
+    - _TessellationLevel: 5
+    - _WindStrength: 0.03
     m_Colors:
-    - _BottomColor: {r: 0.02370354, g: 0.4433962, b: 0.39676368, a: 1}
-    - _TopColor: {r: 0.19999996, g: 1, b: 0.19999996, a: 1}
-    - _WindFrequency: {r: 0.01, g: 0.01, b: 0, a: 0}
+    - _BottomColor: {r: 0.26934877, g: 0.2924528, b: 0.09012695, a: 1}
+    - _TopColor: {r: 0.48010665, g: 0.7264151, b: 0.25812858, a: 1}
+    - _WindFrequency: {r: 0.02, g: 0.02, b: 0, a: 0}
   m_BuildTextureStacks: []

@@ -29,7 +29,8 @@ Material:
     - _MaxDist: 200
     - _MaxDistance: 1000
     - _MaxStep: 200
-    - _MinLum: 0.4
+    - _MaxStepLen: 1
+    - _MinLum: 0.7
     - _Rate: 10
     - _StepSize: 0.1
     m_Colors: []

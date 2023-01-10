@@ -5,7 +5,7 @@ Shader "Hidden/GodRayShader"
         _MainTex ("Texture", 2D) = "white" {}
 
         _MaxDist ("Max Distance", float) = 150
-        _Rate ("_Rate", Range(1, 10)) = 8
+        _MaxStepLen ("Max Step Length", Range(0, 1)) = 1
         _MinLum ("Minimum Level of Lumination", Range(0, 1)) = 0
     }
     SubShader
@@ -33,9 +33,9 @@ Shader "Hidden/GodRayShader"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
-            #define MAX_STEP 200
-            #define MAX_DIST 50
-            #define MIN_DIST 0.001
+            #define MAX_STEP 32
+            //#define MAX_DIST 50
+            //#define MIN_DIST 0.001
 
             struct a2f
             {
@@ -55,7 +55,7 @@ Shader "Hidden/GodRayShader"
             sampler2D _MainTex;
 
             float _MaxDist;
-            float _Rate;
+            float _MaxStepLen;
             float _MinLum;
 
 	        // ---------------------------------------------------------------------------------------------------------------------------------- Kernels
@@ -78,10 +78,10 @@ Shader "Hidden/GodRayShader"
                 return MainLightRealtimeShadow(TransformWorldToShadowCoord(posWS));
             }
 
-            float rayMarch (float3 dir, float maxDist)
+            float rayMarch (float3 dir, float sceneDepth)
             {
                 float3 currentPos = _WorldSpaceCameraPos;
-                float stepSize = maxDist / MAX_STEP;
+                float stepSize = min(sceneDepth / MAX_STEP, _MaxStepLen);
                 float shadowSample = 1;
                 for (int i = 0; i < MAX_STEP; i++)
                 {
@@ -92,12 +92,12 @@ Shader "Hidden/GodRayShader"
                 return shadowSample / MAX_STEP;
             }
 
-            float EasyInOut (float x)
-            {
-                x = saturate(x);
-                return pow(x, _Rate);
-                //return sin(3.1415926 * (x - 0.5)) * 0.5 + 0.5;
-            }
+            //float EasyInOut (float x)
+            //{
+            //    x = saturate(x);
+            //    return pow(x, _Rate);
+            //    //return sin(3.1415926 * (x - 0.5)) * 0.5 + 0.5;
+            //}
 
             float4 frag (v2f i) : SV_Target
             {
@@ -106,10 +106,10 @@ Shader "Hidden/GodRayShader"
                 float depth = LinearEyeDepth(SampleSceneDepth(i.uv), _ZBufferParams);
                 float3 worldCoord = _WorldSpaceCameraPos + normalize(i.viewVector) * depth;
                 //float shadowAtCam = getShadow(_WorldSpaceCameraPos);
-                float shadowSample = rayMarch(normalize(i.viewVector), min(length(worldCoord - _WorldSpaceCameraPos), _MaxDist));
+                float shadowSample = rayMarch(normalize(i.viewVector), length(worldCoord - _WorldSpaceCameraPos));
 
                 //return step(0.99, shadowSample);
-                return float4(col.rgb * (EasyInOut(shadowSample) * (1 - _MinLum) + _MinLum), 1);
+                return float4(col.rgb * (shadowSample * (1 - _MinLum) + _MinLum), 1);
             }
             ENDHLSL
         }

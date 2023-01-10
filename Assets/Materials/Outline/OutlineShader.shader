@@ -3,8 +3,9 @@ Shader "Nofer/OutlineImageEffect"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _NormalDiffMultiplier ("Normal Multiplier", float) = 1
-        _DepthDiffMultiplier ("Depth Multiplier", float) = 100
+
+        //_DepthDiffFactor ("Depth Difference Factor", float) = 10
+        _StepFactor ("Step Factor", Range(0.01, 1)) = 0.5
         _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
     }
     SubShader
@@ -36,8 +37,9 @@ Shader "Nofer/OutlineImageEffect"
 
             sampler2D _MainTex;
             sampler2D _CameraNormalsTexture;
-            float _NormalDiffMultiplier;
-            float _DepthDiffMultiplier;
+
+            //float _DepthDiffFactor;
+            float _StepFactor;
             float4 _OutlineColor;
 
             v2f vert (appdata v)
@@ -66,11 +68,9 @@ Shader "Nofer/OutlineImageEffect"
                     Linear01Depth(SampleSceneDepth(i.uv - float2(1, 1) / _ScreenParams.xy), _ZBufferParams) - 
                     Linear01Depth(SampleSceneDepth(i.uv + float2(1, 1) / _ScreenParams.xy), _ZBufferParams);
 
-                float outline = saturate(
-                    length(normalDiffX) * length(normalDiffY) * _NormalDiffMultiplier +
-                    abs(depthDiffX) * abs(depthDiffY) * _DepthDiffMultiplier
-                    );
+                float outline = step(_StepFactor, length(normalDiffX) * length(normalDiffY) + abs(depthDiffX) * abs(depthDiffY));
 
+                return outline;
                 return lerp(bgCol, _OutlineColor, outline);
             }
             ENDHLSL
