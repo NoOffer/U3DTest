@@ -21,7 +21,6 @@ Shader "CustomShaders/CelShader"
     SubShader
     {
         Tags { "RenderType"="Opaque" }
-        LOD 100
 
         // Cel shader
         Pass
@@ -74,6 +73,10 @@ Shader "CustomShaders/CelShader"
                 o.vertexWS = mul(UNITY_MATRIX_M, v.vertexOS);
                 o.normalWS = mul((float3x3)UNITY_MATRIX_M, v.normalOS);
 
+                //#if UNITY_PASS_SHADOWCASTER
+                //    o.vertexCS = UnityApplyLinearShadowBias(o.vertexCS);
+                //#endif
+
                 return o;
             }
 
@@ -109,14 +112,14 @@ Shader "CustomShaders/CelShader"
 
                 float4 outColor = float4(l.color.rgb * (diffuse + max(specular, rim)) + ambient, 1) * _SurfaceColor;
 
+                return outColor;
                 return float4(shadow, shadow, shadow, 1);
-                //return outColor;
             }
 
             ENDHLSL
         }
 
-        // Shadow
-        UsePass "VertexLit/SHADOWCASTER"
+        //// Shadow
+        //UsePass "VertexLit/SHADOWCASTER"
     }
 }
