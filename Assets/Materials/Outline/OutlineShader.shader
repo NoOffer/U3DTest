@@ -68,7 +68,8 @@ Shader "Nofer/OutlineImageEffect"
                     Linear01Depth(SampleSceneDepth(i.uv - float2(1, 1) / _ScreenParams.xy), _ZBufferParams) - 
                     Linear01Depth(SampleSceneDepth(i.uv + float2(1, 1) / _ScreenParams.xy), _ZBufferParams);
 
-                float outline = step(_StepFactor, length(normalDiffX) * length(normalDiffY) + abs(depthDiffX) * abs(depthDiffY));
+                float outline = Linear01Depth(SampleSceneDepth(i.uv), _ZBufferParams);
+                //float outline = step(_StepFactor, length(normalDiffX) * length(normalDiffY) + abs(depthDiffX) * abs(depthDiffY));
 
                 return outline;
                 return lerp(bgCol, _OutlineColor, outline);

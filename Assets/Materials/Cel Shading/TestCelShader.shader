@@ -13,6 +13,8 @@
 
         //_OutlineScaler("Outline Scaler",  Range(0.0, 1.0)) = 0.5
         //_OutlineColor("Outline Color", Color) = (0, 0, 0, 1)
+
+        _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
     }
 
     SubShader
@@ -38,7 +40,6 @@
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
-            //#include "AutoLight.cginc"
 
             struct a2v
             {
@@ -122,6 +123,32 @@
                 return outColor;
             }
             ENDHLSL
+        }
+
+        Pass
+        {
+            Tags{ "LightMode" = "ShadowCaster" }
+
+            CGPROGRAM
+
+            #pragma vertex vert_shadow
+            #pragma fragment frag_shadow
+            #pragma target 3.0
+
+            float _ShadowBias;
+
+            float4 vert_shadow(float4 vertex:POSITION, uint id : SV_VertexID, float3 normal : NORMAL) : SV_POSITION
+            {
+                vertex -= float4(normal * _ShadowBias, 0);
+                vertex = UnityObjectToClipPos(vertex);
+                return vertex;
+            }
+
+            float4 frag_shadow(void) : COLOR
+            {
+                return 0;
+            }
+            ENDCG
         }
     }
 }

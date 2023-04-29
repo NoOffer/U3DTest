@@ -11,8 +11,7 @@ Shader "CustomShaders/CelShader"
         _RimThreshold ("Rim Threshold",  Range(0.0, 1.0)) = 0.5
         _ShadowThreshold ("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
 
-        //_OutlineScaler ("Outline Scaler",  Range(0.0, 1.0)) = 0.5
-        //_OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
+        _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
     }
 
     HLSLINCLUDE
@@ -25,7 +24,7 @@ Shader "CustomShaders/CelShader"
         // Cel shader
         Pass
         {
-            Cull Back
+            Cull Back ZWrite On
 
             Tags
             {
@@ -121,5 +120,32 @@ Shader "CustomShaders/CelShader"
 
         //// Shadow
         //UsePass "VertexLit/SHADOWCASTER"
+
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags{ "LightMode" = "ShadowCaster" }
+
+            CGPROGRAM
+
+            #pragma vertex vert_shadow
+            #pragma fragment frag_shadow
+            #pragma target 3.0
+
+            float _ShadowBias;
+
+            float4 vert_shadow(float4 vertex:POSITION, uint id : SV_VertexID, float3 normal : NORMAL) : SV_POSITION
+            {
+                vertex -= float4(normal * _ShadowBias, 0);
+                vertex = UnityObjectToClipPos(vertex);
+                return vertex;
+            }
+
+            float4 frag_shadow(void) : COLOR
+            {
+                return 0;
+            }
+            ENDCG
+        }
     }
 }
