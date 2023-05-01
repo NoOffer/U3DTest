@@ -2,7 +2,9 @@ Shader "CustomShaders/CelShader"
 {
     Properties
     {
-        _SurfaceColor ("Surface Color", Color) = (1, 1, 1, 1)
+        _MainTex ("Surface Color", 2D) = "white" {}
+        _LightTex ("Lighting Texture", 2D) = "white" {}
+        //_SurfaceColor ("Surface Color", Color) = (1, 1, 1, 1)
         _Smoothness ("Smoothness Coefficient", Range(0.0, 1.0)) = 1.0
         _RimCoe ("Rim Coefficient", Range(0.0, 1.0)) = 1.0
 
@@ -51,12 +53,15 @@ Shader "CustomShaders/CelShader"
             struct v2f
             {
                 float4 vertexCS : SV_POSITION;
-                float4 vertexWS : TEXCOORD0;
-                float3 normalWS : TEXCOORD1;
+                float2 uv : TEXCOORD0;
+                float4 vertexWS : TEXCOORD1;
+                float3 normalWS : TEXCOORD2;
                 //SHADOW_COORDS(2)
             };
 
-            float4 _SurfaceColor;
+            sampler2D _MainTex;
+            sampler2D _LightTex;
+            //float4 _SurfaceColor;
             float _Smoothness;
             float _RimCoe;
 
@@ -68,8 +73,9 @@ Shader "CustomShaders/CelShader"
             v2f vert (a2v v)
             {
                 v2f o;
-                o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS);
+                o.uv = v.uv;
                 o.vertexWS = mul(UNITY_MATRIX_M, v.vertexOS);
+                o.vertexCS = mul(UNITY_MATRIX_VP, o.vertexWS);
                 o.normalWS = mul((float3x3)UNITY_MATRIX_M, v.normalOS);
 
                 //#if UNITY_PASS_SHADOWCASTER
@@ -109,10 +115,12 @@ Shader "CustomShaders/CelShader"
                 //float3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
                 float3 ambient = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
 
-                float4 outColor = float4(l.color.rgb * (diffuse + max(specular, rim)) + ambient, 1) * _SurfaceColor;
+                float4 baseColor = tex2D(_MainTex, i.uv);
+                float4 lightingFactor = tex2D(_LightTex, i.uv);
+                float4 outColor = float4(l.color.rgb * (diffuse + max(specular, rim) * lightingFactor) + ambient, 1) * baseColor;
 
+                //return float4(shadow, shadow, shadow, 1);
                 return outColor;
-                return float4(shadow, shadow, shadow, 1);
             }
 
             ENDHLSL
@@ -136,8 +144,8 @@ Shader "CustomShaders/CelShader"
 
             float4 vert_shadow(float4 vertex:POSITION, uint id : SV_VertexID, float3 normal : NORMAL) : SV_POSITION
             {
-                vertex -= float4(normal * _ShadowBias, 0);
                 vertex = UnityObjectToClipPos(vertex);
+                vertex -= float4(normal * _ShadowBias, 0);
                 return vertex;
             }
 
