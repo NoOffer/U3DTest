@@ -2,18 +2,20 @@ Shader "CustomShaders/CelShader"
 {
     Properties
     {
-        _MainTex ("Surface Color", 2D) = "white" {}
-        _LightTex ("Lighting Texture", 2D) = "white" {}
+        _MainTex("Surface Color", 2D) = "white" {}
+        _LightTex("Lighting Texture", 2D) = "white" {}
         //_SurfaceColor ("Surface Color", Color) = (1, 1, 1, 1)
-        _Smoothness ("Smoothness Coefficient", Range(0.0, 1.0)) = 1.0
-        _RimCoe ("Rim Coefficient", Range(0.0, 1.0)) = 1.0
+        _Smoothness("Smoothness Coefficient", Range(0.0, 1.0)) = 1.0
+        _RimCoe("Rim Coefficient", Range(0.0, 1.0)) = 1.0
 
-        _DiffuseThreshold ("Diffuse Threshold",  Range(0.0, 1.0)) = 0.5
-        _SpecularThreshold ("Specular Threshold",  Range(0.0, 1.0)) = 0.5
-        _RimThreshold ("Rim Threshold",  Range(0.0, 1.0)) = 0.5
-        _ShadowThreshold ("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
+        _DiffuseThreshold("Diffuse Threshold",  Range(0.0, 1.0)) = 0.5
+        _SpecularThreshold("Specular Threshold",  Range(0.0, 1.0)) = 0.5
+        _RimThreshold("Rim Threshold",  Range(0.0, 1.0)) = 0.5
+            //_ShadowThreshold("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
 
-        _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
+            _OutlineWidth("Outline Width",  Range(0.0, 0.02)) = 0.01
+
+            _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
     }
 
     HLSLINCLUDE
@@ -21,7 +23,7 @@ Shader "CustomShaders/CelShader"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType" = "Opaque" }
 
         // Cel shader
         Pass
@@ -42,7 +44,7 @@ Shader "CustomShaders/CelShader"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
-    
+
             struct a2v
             {
                 float4 vertexOS : POSITION;
@@ -68,30 +70,26 @@ Shader "CustomShaders/CelShader"
             float _DiffuseThreshold;
             float _SpecularThreshold;
             float _RimThreshold;
-            float _ShadowThreshold;
+            //float _ShadowThreshold;
 
-            v2f vert (a2v v)
+            v2f vert(a2v v)
             {
                 v2f o;
                 o.uv = v.uv;
                 o.vertexWS = mul(UNITY_MATRIX_M, v.vertexOS);
                 o.vertexCS = mul(UNITY_MATRIX_VP, o.vertexWS);
-                o.normalWS = mul((float3x3)UNITY_MATRIX_M, v.normalOS);
-
-                //#if UNITY_PASS_SHADOWCASTER
-                //    o.vertexCS = UnityApplyLinearShadowBias(o.vertexCS);
-                //#endif
+                o.normalWS = mul((float3x3)UNITY_MATRIX_I_M, v.normalOS);
 
                 return o;
             }
 
-            float4 frag (v2f i) : SV_Target
+            float4 frag(v2f i) : SV_Target
             {
                 // Get light
                 Light l = GetMainLight(TransformWorldToShadowCoord(i.vertexWS.xyz));
 
                 // Calculate shadow
-                float shadow = step(_ShadowThreshold, saturate(l.shadowAttenuation));
+                float shadow = step(0, saturate(l.shadowAttenuation));
 
                 // Calculate diffuse
                 float diffuse = saturate(dot(i.normalWS, l.direction));
@@ -126,6 +124,50 @@ Shader "CustomShaders/CelShader"
             ENDHLSL
         }
 
+        // Outline
+        Pass
+        {
+            Name "OutlinePass"
+
+            Cull Front
+
+            HLSLPROGRAM
+            #pragma vertex vert_outline
+            #pragma fragment frag_outline
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            struct a2v
+            {
+                float4 vertexOS : POSITION;
+                float3 normalOS : NORMAL;
+            };
+
+            struct v2f
+            {
+                float4 vertexCS : SV_POSITION;
+                float3 normalWS : NORMAL;
+            };
+
+            float _OutlineWidth;
+
+            v2f vert_outline(a2v v)
+            {
+                v2f o;
+                o.normalWS = TransformWorldToHClipDir(v.normalOS);
+                o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS) + float4(o.normalWS * _OutlineWidth, 0);
+
+                return o;
+            }
+
+            float4 frag_outline(v2f i) : SV_Target
+            {
+                return float4(0, 0, 0, 1);
+            }
+            ENDHLSL
+
+        }
+
         //// Shadow
         //UsePass "VertexLit/SHADOWCASTER"
 
@@ -134,17 +176,20 @@ Shader "CustomShaders/CelShader"
             Name "ShadowCaster"
             Tags{ "LightMode" = "ShadowCaster" }
 
-            CGPROGRAM
+            HLSLPROGRAM
 
             #pragma vertex vert_shadow
             #pragma fragment frag_shadow
             #pragma target 3.0
 
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
             float _ShadowBias;
 
             float4 vert_shadow(float4 vertex:POSITION, uint id : SV_VertexID, float3 normal : NORMAL) : SV_POSITION
             {
-                vertex = UnityObjectToClipPos(vertex);
+                vertex = mul(UNITY_MATRIX_MVP, vertex);
+                normal = mul((float3x3)UNITY_MATRIX_I_M, normal);
                 vertex -= float4(normal * _ShadowBias, 0);
                 return vertex;
             }
@@ -153,7 +198,7 @@ Shader "CustomShaders/CelShader"
             {
                 return 0;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }
