@@ -78,7 +78,7 @@ Shader "CustomShaders/CelShader"
                 o.uv = v.uv;
                 o.vertexWS = mul(UNITY_MATRIX_M, v.vertexOS);
                 o.vertexCS = mul(UNITY_MATRIX_VP, o.vertexWS);
-                o.normalWS = mul((float3x3)UNITY_MATRIX_I_M, v.normalOS);
+                o.normalWS = normalize(mul((float3x3)UNITY_MATRIX_I_M, v.normalOS));
 
                 return o;
             }
