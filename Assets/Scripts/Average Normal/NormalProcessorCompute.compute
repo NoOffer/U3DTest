@@ -1,0 +1,17 @@
+#pragma kernel CSMain
+
+StructuredBuffer<int> triangles;
+StructuredBuffer<float3> vertices;
+RWStructuredBuffer<float3> normals;
+
+int numIndices;
+int numVertices;
+
+[numthreads(8, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    int i = id * 3;
+    float3 a = vertices[triangles[i + 2]] - vertices[triangles[i]];
+    float3 b = vertices[triangles[i + 1]] - vertices[triangles[i]];
+    float3 faceNormal = cross(a, b);
+}

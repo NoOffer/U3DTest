@@ -11,15 +11,12 @@ Shader "CustomShaders/CelShader"
         _DiffuseThreshold("Diffuse Threshold",  Range(0.0, 1.0)) = 0.5
         _SpecularThreshold("Specular Threshold",  Range(0.0, 1.0)) = 0.5
         _RimThreshold("Rim Threshold",  Range(0.0, 1.0)) = 0.5
-            //_ShadowThreshold("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
+        //_ShadowThreshold("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
 
-            _OutlineWidth("Outline Width",  Range(0.0, 0.02)) = 0.01
+        _OutlineWidth("Outline Width",  Range(0.0, 0.02)) = 0.01
 
-            _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
+        _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
     }
-
-    HLSLINCLUDE
-    ENDHLSL
 
     SubShader
     {
@@ -56,8 +53,8 @@ Shader "CustomShaders/CelShader"
             {
                 float4 vertexCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
-                float4 vertexWS : TEXCOORD1;
-                float3 normalWS : TEXCOORD2;
+                float4 vertexWS : TEXCOORD2;
+                float3 normalWS : TEXCOORD3;
                 //SHADOW_COORDS(2)
             };
 
@@ -140,7 +137,7 @@ Shader "CustomShaders/CelShader"
             struct a2v
             {
                 float4 vertexOS : POSITION;
-                float3 normalOS : NORMAL;
+                float3 avgNormalOS : TEXCOORD1;
             };
 
             struct v2f
@@ -155,7 +152,7 @@ Shader "CustomShaders/CelShader"
                 v2f o;
                 o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS);
                 //o.vertexCS.xy += normalize(TransformWorldToHClipDir(v.normalOS)).xy * _OutlineWidth * o.vertexCS.w;
-                o.vertexCS += float4(normalize(TransformWorldToHClipDir(v.normalOS)) * _OutlineWidth * o.vertexCS.w, 0);
+                o.vertexCS += float4(normalize(TransformWorldToHClipDir(v.avgNormalOS)) * _OutlineWidth * o.vertexCS.w, 0);
 
                 return o;
             }
