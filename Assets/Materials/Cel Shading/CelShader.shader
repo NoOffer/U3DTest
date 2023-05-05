@@ -146,7 +146,6 @@ Shader "CustomShaders/CelShader"
             struct v2f
             {
                 float4 vertexCS : SV_POSITION;
-                float3 normalWS : NORMAL;
             };
 
             float _OutlineWidth;
@@ -154,8 +153,9 @@ Shader "CustomShaders/CelShader"
             v2f vert_outline(a2v v)
             {
                 v2f o;
-                o.normalWS = TransformWorldToHClipDir(v.normalOS);
-                o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS) + float4(o.normalWS * _OutlineWidth, 0);
+                o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS);
+                //o.vertexCS.xy += normalize(TransformWorldToHClipDir(v.normalOS)).xy * _OutlineWidth * o.vertexCS.w;
+                o.vertexCS += float4(normalize(TransformWorldToHClipDir(v.normalOS)) * _OutlineWidth * o.vertexCS.w, 0);
 
                 return o;
             }
