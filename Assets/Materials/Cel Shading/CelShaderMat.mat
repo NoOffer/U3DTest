@@ -54,8 +54,8 @@ Material:
     - _RimCoe: 1
     - _RimThreshold: 0.7
     - _SaturationScaler: 0.447
-    - _ShadowBias: 0
-    - _ShadowThreshold: 0
+    - _ShadowBias: 0.015
+    - _ShadowThreshold: 0.1
     - _Smoothness: 0.7
     - _SmoothnessCoe: 1
     - _Specular: 15

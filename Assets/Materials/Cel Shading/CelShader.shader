@@ -11,11 +11,11 @@ Shader "CustomShaders/CelShader"
         _DiffuseThreshold("Diffuse Threshold",  Range(0.0, 1.0)) = 0.5
         _SpecularThreshold("Specular Threshold",  Range(0.0, 1.0)) = 0.5
         _RimThreshold("Rim Threshold",  Range(0.0, 1.0)) = 0.5
-        //_ShadowThreshold("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
+        _ShadowThreshold("Shadow Threshold",  Range(0.0, 1.0)) = 0.5
+
+        _ShadowBias("Shadow Bias",  Range(0.0, 0.05)) = 0.01
 
         _OutlineWidth("Outline Width",  Range(0.0, 0.02)) = 0.01
-
-        _ShadowBias("Shadow Bias",  Range(0.0, 1.0)) = 0.5
     }
 
     SubShader
@@ -67,7 +67,7 @@ Shader "CustomShaders/CelShader"
             float _DiffuseThreshold;
             float _SpecularThreshold;
             float _RimThreshold;
-            //float _ShadowThreshold;
+            float _ShadowThreshold;
 
             v2f vert(a2v v)
             {
@@ -86,7 +86,7 @@ Shader "CustomShaders/CelShader"
                 Light l = GetMainLight(TransformWorldToShadowCoord(i.vertexWS.xyz));
 
                 // Calculate shadow
-                float shadow = step(0, saturate(l.shadowAttenuation));
+                float shadow = step(_ShadowThreshold, saturate(l.shadowAttenuation));
 
                 // Calculate diffuse
                 float diffuse = saturate(dot(i.normalWS, l.direction));
@@ -186,7 +186,7 @@ Shader "CustomShaders/CelShader"
             float4 vert_shadow(float4 vertex:POSITION, uint id : SV_VertexID, float3 normal : NORMAL) : SV_POSITION
             {
                 vertex = mul(UNITY_MATRIX_MVP, vertex);
-                normal = mul((float3x3)UNITY_MATRIX_I_M, normal);
+                normal = mul(UNITY_MATRIX_MVP, normal);
                 vertex -= float4(normal * _ShadowBias, 0);
                 return vertex;
             }
