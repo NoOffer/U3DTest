@@ -75,7 +75,7 @@
                 o.uv = v.uv;
                 o.vertexWS = mul(UNITY_MATRIX_M, v.vertexOS);
                 o.vertexCS = mul(UNITY_MATRIX_VP, o.vertexWS);
-                o.normalWS = normalize(mul((float3x3)UNITY_MATRIX_I_M, v.normalOS));
+                o.normalWS = normalize(mul(transpose((float3x3)UNITY_MATRIX_I_M), v.normalOS));
 
                 return o;
             }
@@ -113,9 +113,9 @@
 
                 float4 baseColor = tex2D(_MainTex, i.uv);
                 float4 lightingFactor = tex2D(_LightTex, i.uv);
-                float4 outColor = float4(l.color.rgb * (diffuse + max(specular, rim) * lightingFactor) + ambient, 1) * baseColor;
+                float4 outColor = float4(l.color.rgb * (diffuse + max(specular, rim) * lightingFactor.rgb) + ambient, 1) * baseColor;
 
-                return float4(shadow, shadow, shadow, 1);
+                //return float4(i.normalWS, 1);
                 return outColor;
             }
 
@@ -153,7 +153,9 @@
                 v2f o;
                 o.vertexCS = mul(UNITY_MATRIX_MVP, v.vertexOS);
                 //o.vertexCS.xy += normalize(TransformWorldToHClipDir(v.normalOS)).xy * _OutlineWidth * o.vertexCS.w;
-                o.vertexCS += float4(normalize(TransformWorldToHClipDir(v.avgNormalOS)) * _OutlineWidth * o.vertexCS.w, 0);
+                float3 normalCS = normalize(TransformWorldToHClipDir(v.avgNormalOS));
+                o.vertexCS += 
+                    float4(normalCS * _OutlineWidth * o.vertexCS.w, 0);
 
                 return o;
             }
@@ -187,7 +189,7 @@
             float4 vert_shadow(float4 vertex : POSITION, uint id : SV_VertexID, float3 normal : NORMAL) : SV_POSITION
             {
                 vertex = mul(UNITY_MATRIX_MVP, vertex);
-                normal = mul(UNITY_MATRIX_MVP, normal);
+                normal = mul((float3x3)UNITY_MATRIX_MVP, normal);
                 vertex -= float4(normal * _ShadowBias, 0);
                 return vertex;
             }
