@@ -43,13 +43,14 @@ Material:
     - OutlineThreshold: 0.506
     - Vector1_f75e5b09050145f08c66e48fd1629a44: 200
     - _BrightnessScaler: 0.05
+    - _CustomShadowBias: 0.01
     - _DiffuseThreshold: 0.1
     - _Glossiness: 32
     - _MaxSaturation: 1
     - _MinSaturation: 0
     - _OutlineScaler: 0.03
     - _OutlineThreshold: 0.15
-    - _OutlineWidth: 0.005
+    - _OutlineWidth: 0.004
     - _RimAmount: 0.7
     - _RimCoe: 1
     - _RimThreshold: 0.7
